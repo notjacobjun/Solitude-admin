@@ -32,6 +32,7 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+        <!-- Configure postgres with JPA capabilities -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
@@ -60,6 +61,10 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-rest</artifactId>
 		</dependency>
 	</dependencies>
 
