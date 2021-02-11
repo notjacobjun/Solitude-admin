@@ -37,7 +37,7 @@ public class GoogleCalendar {
      * Global instance of the scopes required by this quickstart.
      * If modifying these scopes, delete your previously saved tokens/ folder.
      */
-    private static final List<String> SCOPES = Collections.singletonList(CalendarScopes.CALENDAR_READONLY);
+    private static final List<String> SCOPES = Collections.singletonList(CalendarScopes.CALENDAR);
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
 
     /**
@@ -65,25 +65,10 @@ public class GoogleCalendar {
     }
 
     public static List<Event> getUpcomingEventsByLocation(String location, int size) throws IOException, GeneralSecurityException {
-        // Build a new authorized API client service.
-        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        Calendar service = new Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                .setApplicationName(APPLICATION_NAME)
-                .build();
+        Calendar service = getService();
 
-        CalendarList calendars = service.calendarList().list().execute();
-        List<CalendarListEntry> calendarItems = calendars.getItems();
-        String calendarId = "";
-        for(CalendarListEntry cal : calendarItems)  {
-        	/* Get the calendarId for the calendar "Solitude"
-        	 * There's probably a better way to do this
-        	 * Filtering while fetching maybe (Couldn't find it in the docs)
-        	 */
-        	if(cal.getSummary().equals("Solitude")) {
-        		calendarId = cal.getId();
-        	}
-        }
-        if(calendarId.length() > 0) {
+        String calendarId = getCalendarId();
+        if(calendarId!=null) {
         	DateTime now = new DateTime(System.currentTimeMillis());
         	// Get the next 
         	Events events = service.events().list(calendarId)
@@ -104,5 +89,43 @@ public class GoogleCalendar {
         // Default return if there is no CalendarId
         return new ArrayList<Event>();
         
+    }
+
+    public static String getCalendarId() {
+    	String calendarId = null;
+		try {
+	    	Calendar service = getService();
+	
+	        CalendarList calendars = service.calendarList().list().execute();
+	        List<CalendarListEntry> calendarItems = calendars.getItems();
+	        
+	        for(CalendarListEntry cal : calendarItems)  {
+	        	/* Get the calendarId for the calendar "Solitude"
+	        	 * There's probably a better way to do this
+	        	 * Filtering while fetching maybe (Couldn't find it in the docs)
+	        	 */
+	        	if(cal.getSummary().equals("Solitude")) {
+	        		calendarId = cal.getId();
+	        	}
+	        }
+		} catch (GeneralSecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			return calendarId;
+		}
+    }
+    
+    public static Calendar getService() throws IOException, GeneralSecurityException {
+    	// Build a new authorized API client service.
+    	final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+        Calendar service = new Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+        
+        return service;
     }
 }
