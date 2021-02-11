@@ -13,6 +13,8 @@ import com.google.api.client.util.DateTime;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
+import com.google.api.services.calendar.model.CalendarList;
+import com.google.api.services.calendar.model.CalendarListEntry;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
 
@@ -21,8 +23,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GoogleCalendar {
     private static final String APPLICATION_NAME = "Google Calendar API Java Quickstart";
@@ -60,33 +64,45 @@ public class GoogleCalendar {
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
 
-    public static void getEvents() throws IOException, GeneralSecurityException {
+    public static List<Event> getUpcomingEventsByLocation(String location, int size) throws IOException, GeneralSecurityException {
         // Build a new authorized API client service.
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         Calendar service = new Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
 
-        // List the next 10 events from the primary calendar.
-        DateTime now = new DateTime(System.currentTimeMillis());
-        Events events = service.events().list("primary")
-                .setMaxResults(10)
-                .setTimeMin(now)
-                .setOrderBy("startTime")
-                .setSingleEvents(true)
-                .execute();
-        List<Event> items = events.getItems();
-        if (items.isEmpty()) {
-            System.out.println("No upcoming events found.");
-        } else {
-            System.out.println("Upcoming events");
-            for (Event event : items) {
-                DateTime start = event.getStart().getDateTime();
-                if (start == null) {
-                    start = event.getStart().getDate();
-                }
-                System.out.printf("%s (%s)\n", event.getSummary(), start);
-            }
+        CalendarList calendars = service.calendarList().list().execute();
+        List<CalendarListEntry> calendarItems = calendars.getItems();
+        String calendarId = "";
+        for(CalendarListEntry cal : calendarItems)  {
+        	/* Get the calendarId for the calendar "Solitude"
+        	 * There's probably a better way to do this
+        	 * Filtering while fetching maybe (Couldn't find it in the docs)
+        	 */
+        	if(cal.getSummary().equals("Solitude")) {
+        		calendarId = cal.getId();
+        	}
         }
+        if(calendarId.length() > 0) {
+        	DateTime now = new DateTime(System.currentTimeMillis());
+        	// Get the next 
+        	Events events = service.events().list(calendarId)
+                    .setMaxResults(size)
+                    .setTimeMin(now)
+                    .setOrderBy("startTime")
+                    .setSingleEvents(true)
+                    .execute();
+            List<Event> items = events.getItems();
+            
+            // Filter events based on location
+            List<Event> filteredEvents = items.stream()
+            	    	        .filter(evnt -> 
+            	    	          evnt.getLocation().equals(location))
+            	    	        .collect(Collectors.toList());
+            return filteredEvents;
+        }
+        // Default return if there is no CalendarId
+        return new ArrayList<Event>();
+        
     }
 }
