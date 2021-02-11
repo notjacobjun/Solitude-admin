@@ -2,6 +2,7 @@ package com.Solitude.controllers;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventAttendee;
 import com.google.api.services.calendar.model.EventDateTime;
+import com.google.api.services.calendar.model.Events;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
@@ -61,32 +63,53 @@ public class EventController {
 	//    	FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
 	//    	String uid = decodedToken.getUid();
 	    	
-	    	Event event = new Event()
-			    .setSummary(bookingEvent.getName())
-			    .setLocation(bookingEvent.getLocation())
-			    .setDescription(bookingEvent.getDescription());
-	
-			DateTime startDateTime = new DateTime(bookingEvent.getStartTime());
-			EventDateTime start = new EventDateTime()
-			    .setDateTime(startDateTime)
-			    .setTimeZone("America/Los_Angeles");
-			event.setStart(start);
-	
-			DateTime endDateTime = new DateTime(bookingEvent.getEndTime());
-			EventDateTime end = new EventDateTime()
-			    .setDateTime(endDateTime)
-			    .setTimeZone("America/Los_Angeles");
-			event.setEnd(end);
-			
-			EventAttendee[] attendees = new EventAttendee[] {
-			    new EventAttendee().setEmail(bookingEvent.getAttendeeEmail()),
-			};
-			event.setAttendees(Arrays.asList(attendees));
-			
-			Calendar service = GoogleCalendar.getService();
-			
-			event = service.events().insert(GoogleCalendar.getCalendarId(), event).execute();
-	        return new ResponseEntity<>(event, HttpStatus.OK);
+    		String calendarId = GoogleCalendar.getCalendarId();
+    		Calendar service = GoogleCalendar.getService();
+    		
+    		DateTime startDateTime = new DateTime(bookingEvent.getStartTime());
+    		DateTime endDateTime = new DateTime(bookingEvent.getEndTime());
+    		
+    		Events events = service.events().list(calendarId)
+                    .setTimeMin(startDateTime)
+                    .setTimeMax(endDateTime)
+                    .setSingleEvents(true)
+                    .execute();
+    		// TODO: Filter the events using set() after service.events().list(calendarId)
+    		
+    		// Filter the events by the booking event's location
+    		List<Event> filteredEvents = events.getItems().stream()
+	    	        .filter(evnt -> 
+	    	          evnt.getLocation().equals(bookingEvent.getLocation()))
+	    	        .collect(Collectors.toList());
+    		// Create the event only if there are previous events in that time frame for that location
+    		if(filteredEvents.isEmpty()) {
+    			Event event = new Event()
+				    .setSummary(bookingEvent.getName())
+				    .setLocation(bookingEvent.getLocation())
+				    .setDescription(bookingEvent.getDescription());
+		
+				EventDateTime start = new EventDateTime()
+				    .setDateTime(startDateTime)
+				    .setTimeZone("America/Los_Angeles");
+				event.setStart(start);
+		
+				EventDateTime end = new EventDateTime()
+				    .setDateTime(endDateTime)
+				    .setTimeZone("America/Los_Angeles");
+				event.setEnd(end);
+				
+				EventAttendee[] attendees = new EventAttendee[] {
+				    new EventAttendee().setEmail(bookingEvent.getAttendeeEmail()),
+				};
+				event.setAttendees(Arrays.asList(attendees));
+				
+				event = service.events().insert(calendarId, event).execute();
+		        return new ResponseEntity<>(event, HttpStatus.OK);
+    		} else {
+    			// If an event already exists in that time range for that location
+    			return new ResponseEntity<>(null, HttpStatus.NOT_ACCEPTABLE);
+    		}
+	    	
     	} catch(Exception e) {
             logger.error("Internal error {} ", e.getMessage());
             e.printStackTrace();
