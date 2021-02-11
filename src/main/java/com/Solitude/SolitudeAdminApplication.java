@@ -1,4 +1,4 @@
-package com.Solitude.Solitude;
+package com.Solitude;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

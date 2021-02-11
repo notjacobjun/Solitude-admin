@@ -24,11 +24,10 @@ public class FirebaseConfig {
                     .setDatabaseUrl("https://solitude-478ad.firebaseio.com")
                     .build();
 
-            FirebaseApp firebaseApp = FirebaseApp.initializeApp(options);
-
-
-            System.out.println(firebaseApp);
-
+            if(FirebaseApp.getApps().isEmpty()) { //<--- check with this line
+            	FirebaseApp firebaseApp = FirebaseApp.initializeApp(options);
+            	System.out.println(firebaseApp);
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
