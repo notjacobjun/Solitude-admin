@@ -55,7 +55,25 @@ public class EventController {
         
     }
     
-    
+
+    @RequestMapping(value = "/history/{location}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Event>> getHistory(@PathVariable("location") String location, @RequestParam(name = "size") Integer  size) {
+        try {
+//        	FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
+//        	String uid = decodedToken.getUid();
+        	
+        	// TODO: Verify if the location belongs to the uid in Postgres
+        	
+        	List<Event> events = GoogleCalendar.getPastEventsByLocation(location, size);
+        	logger.debug("Found {} past events", events.size());
+            return new ResponseEntity<>(events, HttpStatus.OK);
+        } catch(Exception e) {
+            logger.error("Internal error {} ", e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        
+    }
     
     // TODO: Add firebase authentication
     @RequestMapping(value = "/create", 
