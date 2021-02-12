@@ -33,7 +33,7 @@ import com.google.firebase.auth.FirebaseToken;
 @RequestMapping("/events")
 public class EventController {
 
-    private static final Logger logger = LoggerFactory.getLogger(TestController.class);
+    private static final Logger logger = LoggerFactory.getLogger(EventController.class);
     
     // TODO: Add firebase authentication
     @RequestMapping(value = "/upcoming/{location}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -46,6 +46,25 @@ public class EventController {
         	
         	List<Event> events = GoogleCalendar.getUpcomingEventsByLocation(location, size);
         	logger.debug("Found {} upcoming events", events.size());
+            return new ResponseEntity<>(events, HttpStatus.OK);
+        } catch(Exception e) {
+            logger.error("Internal error {} ", e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        
+    }
+    
+    @RequestMapping(value = "/history/{location}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Event>> getHistory(@PathVariable("location") String location, @RequestParam(name = "size") Integer  size) {
+        try {
+//        	FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
+//        	String uid = decodedToken.getUid();
+        	
+        	// TODO: Verify if the location belongs to the uid in Postgres
+        	
+        	List<Event> events = GoogleCalendar.getPastEventsByLocation(location, size);
+        	logger.debug("Found {} past events", events.size());
             return new ResponseEntity<>(events, HttpStatus.OK);
         } catch(Exception e) {
             logger.error("Internal error {} ", e.getMessage());

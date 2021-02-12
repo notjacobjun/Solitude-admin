@@ -63,34 +63,7 @@ public class GoogleCalendar {
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
-
-    public static List<Event> getUpcomingEventsByLocation(String location, int size) throws IOException, GeneralSecurityException {
-        Calendar service = getService();
-
-        String calendarId = getCalendarId();
-        if(calendarId!=null) {
-        	DateTime now = new DateTime(System.currentTimeMillis());
-        	// Get the next 
-        	Events events = service.events().list(calendarId)
-                    .setMaxResults(size)
-                    .setTimeMin(now)
-                    .setOrderBy("startTime")
-                    .setSingleEvents(true)
-                    .execute();
-            List<Event> items = events.getItems();
-            
-            // Filter events based on location
-            List<Event> filteredEvents = items.stream()
-            	    	        .filter(evnt -> 
-            	    	          evnt.getLocation().equals(location))
-            	    	        .collect(Collectors.toList());
-            return filteredEvents;
-        }
-        // Default return if there is no CalendarId
-        return new ArrayList<Event>();
-        
-    }
-
+    
     public static String getCalendarId() {
     	String calendarId = null;
 		try {
@@ -128,4 +101,57 @@ public class GoogleCalendar {
         
         return service;
     }
+
+    public static List<Event> getUpcomingEventsByLocation(String location, int size) throws IOException, GeneralSecurityException {
+        Calendar service = getService();
+
+        String calendarId = getCalendarId();
+        if(calendarId!=null) {
+        	DateTime now = new DateTime(System.currentTimeMillis());
+        	// Get the next 
+        	Events events = service.events().list(calendarId)
+                    .setMaxResults(size)
+                    .setTimeMin(now)
+                    .setOrderBy("startTime")
+                    .setSingleEvents(true)
+                    .execute();
+            List<Event> items = events.getItems();
+            
+            // Filter events based on location
+            List<Event> filteredEvents = items.stream()
+            	    	        .filter(evnt -> 
+            	    	          evnt.getLocation().equals(location))
+            	    	        .collect(Collectors.toList());
+            return filteredEvents;
+        }
+        // Default return if there is no CalendarId
+        return new ArrayList<Event>();
+        
+    }
+    
+    public static List<Event> getPastEventsByLocation(String location, Integer size) throws IOException, GeneralSecurityException {
+		Calendar service = getService();
+
+        String calendarId = getCalendarId();
+        if(calendarId!=null) {
+        	DateTime now = new DateTime(System.currentTimeMillis());
+        	// Get the next 
+        	Events events = service.events().list(calendarId)
+                    .setMaxResults(size)
+                    .setTimeMax(now)
+                    .setOrderBy("startTime")
+                    .setSingleEvents(true)
+                    .execute();
+            List<Event> items = events.getItems();
+            
+            // Filter events based on location
+            List<Event> filteredEvents = items.stream()
+            	    	        .filter(evnt -> 
+            	    	          evnt.getLocation().equals(location))
+            	    	        .collect(Collectors.toList());
+            return filteredEvents;
+        }
+        // Default return if there is no CalendarId
+        return new ArrayList<Event>();
+	}
 }
