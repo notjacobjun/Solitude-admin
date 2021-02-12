@@ -70,53 +70,61 @@ public class EventController {
     		
     		DateTime startDateTime = new DateTime(bookingEvent.getStartTime());
     		DateTime endDateTime = new DateTime(bookingEvent.getEndTime());
+
+    		// Check if start time is after the current time
+    		if(startDateTime.getValue()>=System.currentTimeMillis()) {
     		
-    		Events events = service.events().list(calendarId)
-                    .setTimeMin(startDateTime)
-                    .setTimeMax(endDateTime)
-                    .setSingleEvents(true)
-                    .execute();
-    		// TODO: Filter the events using set() after service.events().list(calendarId)
-    		
-    		// Filter the events by the booking event's location
-    		List<Event> filteredEvents = events.getItems().stream()
-	    	        .filter(evnt -> 
-	    	          evnt.getLocation().equals(bookingEvent.getLocation())
-	    	          || evnt.getAttendees().stream().filter(o -> o.getEmail().equals(bookingEvent.getAttendeeEmail())).findFirst().isPresent() 
-	    	        )
-	    	        .collect(Collectors.toList());
-    		// Create the event only if there are previous events in that time frame for that location
-    		if(filteredEvents.isEmpty()) {
-    			Event event = new Event()
-				    .setSummary(bookingEvent.getName())
-				    .setLocation(bookingEvent.getLocation())
-				    .setDescription(bookingEvent.getDescription());
-		
-				EventDateTime start = new EventDateTime()
-				    .setDateTime(startDateTime)
-				    .setTimeZone("America/Los_Angeles");
-				event.setStart(start);
-		
-				EventDateTime end = new EventDateTime()
-				    .setDateTime(endDateTime)
-				    .setTimeZone("America/Los_Angeles");
-				event.setEnd(end);
-				
-				EventAttendee[] attendees = new EventAttendee[] {
-				    new EventAttendee().setEmail(bookingEvent.getAttendeeEmail()),
-				};
-				event.setAttendees(Arrays.asList(attendees));
-				
-				event = service.events().insert(calendarId, event).execute();
-		        return new ResponseEntity<>(event, HttpStatus.OK);
+	    		Events events = service.events().list(calendarId)
+	                    .setTimeMin(startDateTime)
+	                    .setTimeMax(endDateTime)
+	                    .setSingleEvents(true)
+	                    .execute();
+	    		// TODO: Filter the events using set() after service.events().list(calendarId)
+	    		
+	    		// Filter the events by the booking event's location
+	    		List<Event> filteredEvents = events.getItems().stream()
+		    	        .filter(evnt -> 
+		    	          evnt.getLocation().equals(bookingEvent.getLocation())
+		    	          || evnt.getAttendees().stream().filter(o -> o.getEmail().equals(bookingEvent.getAttendeeEmail())).findFirst().isPresent() 
+		    	        )
+		    	        .collect(Collectors.toList());
+	    		// Create the event only if there are previous events in that time frame for that location
+	    		if(filteredEvents.isEmpty()) {
+	    			Event event = new Event()
+					    .setSummary(bookingEvent.getName())
+					    .setLocation(bookingEvent.getLocation())
+					    .setDescription(bookingEvent.getDescription());
+			
+					EventDateTime start = new EventDateTime()
+					    .setDateTime(startDateTime)
+					    .setTimeZone("America/Los_Angeles");
+					event.setStart(start);
+			
+					EventDateTime end = new EventDateTime()
+					    .setDateTime(endDateTime)
+					    .setTimeZone("America/Los_Angeles");
+					event.setEnd(end);
+					
+					EventAttendee[] attendees = new EventAttendee[] {
+					    new EventAttendee().setEmail(bookingEvent.getAttendeeEmail()),
+					};
+					event.setAttendees(Arrays.asList(attendees));
+					
+					event = service.events().insert(calendarId, event).execute();
+			        return new ResponseEntity<>(event, HttpStatus.OK);
+	    		} else {
+	    			// If an event already exists in that time range for that location
+	    			if(filteredEvents.stream().filter(o -> o.getLocation().equals(bookingEvent.getLocation())).findFirst().isPresent()) {
+	    				return new ResponseEntity<>(null, HttpStatus.valueOf(420));
+	    			} else {
+	    				// If an event exists for that user elsewhere
+	    				return new ResponseEntity<>(null, HttpStatus.valueOf(421));
+	    			}
+	    			
+	    		}
     		} else {
-    			// If an event already exists in that time range for that location or an event exists for that user elsewhere
-    			if(filteredEvents.stream().filter(o -> o.getLocation().equals(bookingEvent.getLocation())).findFirst().isPresent()) {
-    				return new ResponseEntity<>(null, HttpStatus.valueOf(420));
-    			} else {
-    				return new ResponseEntity<>(null, HttpStatus.valueOf(421));
-    			}
-    			
+    			// If start time is before the current time
+    			return new ResponseEntity<>(null, HttpStatus.valueOf(419));
     		}
 	    	
     	} catch(Exception e) {
