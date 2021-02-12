@@ -33,3 +33,5 @@ build/
 .vscode/
 
 solitude-credentials.json
+src/main/resources/credentials.json
+tokens
