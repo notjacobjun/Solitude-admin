@@ -33,11 +33,11 @@ import com.google.firebase.auth.FirebaseToken;
 @RequestMapping("/events")
 public class EventController {
 
-    private static final Logger logger = LoggerFactory.getLogger(TestController.class);
+    private static final Logger logger = LoggerFactory.getLogger(EventController.class);
     
     // TODO: Add firebase authentication
     @RequestMapping(value = "/upcoming/{location}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Event>> getEvents(@PathVariable("location") String location, @RequestParam(name = "size") Integer  size) {
+    public ResponseEntity<List<Event>> getUpcomingEvents(@PathVariable("location") String location, @RequestParam(name = "size") Integer  size) {
         try {
 //        	FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
 //        	String uid = decodedToken.getUid();
@@ -55,10 +55,12 @@ public class EventController {
         
     }
     
+    
+    
     // TODO: Add firebase authentication
     @RequestMapping(value = "/create", 
             method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Event> createUser(@RequestBody BookingEvent bookingEvent) {
+    public ResponseEntity<Object> createEvent(@RequestBody BookingEvent bookingEvent) {
     	try {
 	//    	FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
 	//    	String uid = decodedToken.getUid();
@@ -79,7 +81,9 @@ public class EventController {
     		// Filter the events by the booking event's location
     		List<Event> filteredEvents = events.getItems().stream()
 	    	        .filter(evnt -> 
-	    	          evnt.getLocation().equals(bookingEvent.getLocation()))
+	    	          evnt.getLocation().equals(bookingEvent.getLocation())
+	    	          || evnt.getAttendees().stream().filter(o -> o.getEmail().equals(bookingEvent.getAttendeeEmail())).findFirst().isPresent() 
+	    	        )
 	    	        .collect(Collectors.toList());
     		// Create the event only if there are previous events in that time frame for that location
     		if(filteredEvents.isEmpty()) {
@@ -106,8 +110,13 @@ public class EventController {
 				event = service.events().insert(calendarId, event).execute();
 		        return new ResponseEntity<>(event, HttpStatus.OK);
     		} else {
-    			// If an event already exists in that time range for that location
-    			return new ResponseEntity<>(null, HttpStatus.NOT_ACCEPTABLE);
+    			// If an event already exists in that time range for that location or an event exists for that user elsewhere
+    			if(filteredEvents.stream().filter(o -> o.getLocation().equals(bookingEvent.getLocation())).findFirst().isPresent()) {
+    				return new ResponseEntity<>(null, HttpStatus.valueOf(420));
+    			} else {
+    				return new ResponseEntity<>(null, HttpStatus.valueOf(421));
+    			}
+    			
     		}
 	    	
     	} catch(Exception e) {
