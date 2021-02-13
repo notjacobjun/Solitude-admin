@@ -1,26 +1,19 @@
 package com.Solitude.RESTHelpers;
 
+import com.Solitude.Entity.Location;
+
 public class BookingEvent {
 	private String name;
-	private String location;
+	private Location location;
 	private String description;
+	private int partyNumber;
+	private boolean checkedIn;
 	private String startTime;
 	private String endTime;
 	private String attendeeEmail;
-	
-	public BookingEvent() {
-		
-	}
 
-	public BookingEvent(String name, String location, String description, String startTime, String endTime,
-			String attendeeEmail) {
-		super();
-		this.name = name;
-		this.location = location;
-		this.description = description;
-		this.startTime = startTime;
-		this.endTime = endTime;
-		this.attendeeEmail = attendeeEmail;
+	public BookingEvent() {
+
 	}
 
 	public String getName() {
@@ -31,11 +24,11 @@ public class BookingEvent {
 		this.name = name;
 	}
 
-	public String getLocation() {
+	public Location getLocation() {
 		return location;
 	}
 
-	public void setLocation(String location) {
+	public void setLocation(Location location) {
 		this.location = location;
 	}
 
@@ -70,5 +63,32 @@ public class BookingEvent {
 	public void setAttendeeEmail(String attendeeEmail) {
 		this.attendeeEmail = attendeeEmail;
 	}
-		
+
+	public int getPartyNumber() {
+		return partyNumber;
+	}
+
+	public void setPartyNumber(int partyNumber) {
+		this.partyNumber = partyNumber;
+	}
+
+	public BookingEvent(String name, Location location, String description, int partyNumber, boolean checkedIn,
+			String startTime, String endTime, String attendeeEmail) {
+		this.name = name;
+		this.location = location;
+		this.description = description;
+		this.partyNumber = partyNumber;
+		this.checkedIn = checkedIn;
+		this.startTime = startTime;
+		this.endTime = endTime;
+		this.attendeeEmail = attendeeEmail;
+	}
+
+	public boolean isCheckedIn() {
+		return checkedIn;
+	}
+
+	public void setCheckedIn(boolean checkedIn) {
+		this.checkedIn = checkedIn;
+	}
 }

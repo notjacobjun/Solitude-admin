@@ -11,22 +11,20 @@ import java.io.IOException;
 
 @Configuration
 public class FirebaseConfig {
-	 @PostConstruct
+    @PostConstruct
     public void init() {
 
         FileInputStream serviceAccount;
         try {
             serviceAccount = new FileInputStream("solitude-credentials.json");
 
-
             FirebaseOptions options = new FirebaseOptions.Builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .setDatabaseUrl("https://solitude-478ad.firebaseio.com")
-                    .build();
+                    .setDatabaseUrl("https://solitude-478ad.firebaseio.com").build();
 
-            if(FirebaseApp.getApps().isEmpty()) { //<--- check with this line
-            	FirebaseApp firebaseApp = FirebaseApp.initializeApp(options);
-            	System.out.println(firebaseApp);
+            if (FirebaseApp.getApps().isEmpty()) { // <--- check with this line
+                FirebaseApp firebaseApp = FirebaseApp.initializeApp(options);
+                System.out.println(firebaseApp);
             }
 
         } catch (IOException e) {
