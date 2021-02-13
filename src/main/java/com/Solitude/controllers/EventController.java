@@ -31,36 +31,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/events")
 public class EventController {
 
-<<<<<<< HEAD
-	private static final Logger logger = LoggerFactory.getLogger(TestController.class);
+	private static final Logger logger = LoggerFactory.getLogger(EventController.class);
 
-	// TODO: Add firebase authentication
-	@RequestMapping(value = "/upcoming/{location}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<Event>> getEvents(@PathVariable("location") String location,
-			@RequestParam(name = "size") Integer size) {
-		try {
-			// FirebaseToken decodedToken =
-			// FirebaseAuth.getInstance().verifyIdToken(idToken);
-			// String uid = decodedToken.getUid();
-
-			// TODO: Verify if the location belongs to the uid in Postgres
-
-			List<Event> events = GoogleCalendar.getUpcomingEventsByLocation(location, size);
-			logger.debug("Found {} upcoming events", events.size());
-			return new ResponseEntity<>(events, HttpStatus.OK);
-		} catch (Exception e) {
-			logger.error("Internal error {} ", e.getMessage());
-			e.printStackTrace();
-			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-	}
-
-	// TODO: Add firebase authentication
-	@PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE);
-    public ResponseEntity<Event> createUser(@RequestBody BookingEvent bookingEvent) {
-=======
-    private static final Logger logger = LoggerFactory.getLogger(EventController.class);
     
     // TODO: Add firebase authentication
     @RequestMapping(value = "/upcoming/{location}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -106,7 +78,6 @@ public class EventController {
     @RequestMapping(value = "/create", 
             method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> createEvent(@RequestBody BookingEvent bookingEvent) {
->>>>>>> 05941878e73f1aced9f3caec5a6caf57eab2da7e
     	try {
 	//    	FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
 	//    	String uid = decodedToken.getUid();
@@ -130,15 +101,14 @@ public class EventController {
 	    		// Filter the events by the booking event's location
 	    		List<Event> filteredEvents = events.getItems().stream()
 		    	        .filter(evnt -> 
-		    	          evnt.getLocation().equals(bookingEvent.getLocation())
-		    	          || evnt.getAttendees().stream().filter(o -> o.getEmail().equals(bookingEvent.getAttendeeEmail())).findFirst().isPresent() 
+		    	          evnt.getAttendees().stream().filter(o -> o.getEmail().equals(bookingEvent.getAttendeeEmail())).findFirst().isPresent() 
 		    	        )
 		    	        .collect(Collectors.toList());
-	    		// Create the event only if there are previous events in that time frame for that location
+	    		// Create the event only if there are no previous events in that time frame for that user
 	    		if(filteredEvents.isEmpty()) {
 	    			Event event = new Event()
 					    .setSummary(bookingEvent.getName())
-					    .setLocation(bookingEvent.getLocation())
+					    .setLocation(bookingEvent.getLocation().getName())
 					    .setDescription(bookingEvent.getDescription());
 			
 					EventDateTime start = new EventDateTime()
