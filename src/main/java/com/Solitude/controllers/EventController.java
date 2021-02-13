@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/events")
 public class EventController {
 
+<<<<<<< HEAD
 	private static final Logger logger = LoggerFactory.getLogger(TestController.class);
 
 	// TODO: Add firebase authentication
@@ -58,6 +59,54 @@ public class EventController {
 	// TODO: Add firebase authentication
 	@PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE);
     public ResponseEntity<Event> createUser(@RequestBody BookingEvent bookingEvent) {
+=======
+    private static final Logger logger = LoggerFactory.getLogger(EventController.class);
+    
+    // TODO: Add firebase authentication
+    @RequestMapping(value = "/upcoming/{location}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Event>> getUpcomingEvents(@PathVariable("location") String location, @RequestParam(name = "size") Integer  size) {
+        try {
+//        	FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
+//        	String uid = decodedToken.getUid();
+        	
+        	// TODO: Verify if the location belongs to the uid in Postgres
+        	
+        	List<Event> events = GoogleCalendar.getUpcomingEventsByLocation(location, size);
+        	logger.debug("Found {} upcoming events", events.size());
+            return new ResponseEntity<>(events, HttpStatus.OK);
+        } catch(Exception e) {
+            logger.error("Internal error {} ", e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        
+    }
+    
+
+    @RequestMapping(value = "/history/{location}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Event>> getHistory(@PathVariable("location") String location, @RequestParam(name = "size") Integer  size) {
+        try {
+//        	FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
+//        	String uid = decodedToken.getUid();
+        	
+        	// TODO: Verify if the location belongs to the uid in Postgres
+        	
+        	List<Event> events = GoogleCalendar.getPastEventsByLocation(location, size);
+        	logger.debug("Found {} past events", events.size());
+            return new ResponseEntity<>(events, HttpStatus.OK);
+        } catch(Exception e) {
+            logger.error("Internal error {} ", e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        
+    }
+    
+    // TODO: Add firebase authentication
+    @RequestMapping(value = "/create", 
+            method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> createEvent(@RequestBody BookingEvent bookingEvent) {
+>>>>>>> 05941878e73f1aced9f3caec5a6caf57eab2da7e
     	try {
 	//    	FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
 	//    	String uid = decodedToken.getUid();
@@ -67,46 +116,61 @@ public class EventController {
     		
     		DateTime startDateTime = new DateTime(bookingEvent.getStartTime());
     		DateTime endDateTime = new DateTime(bookingEvent.getEndTime());
+
+    		// Check if start time is after the current time
+    		if(startDateTime.getValue()>=System.currentTimeMillis()) {
     		
-    		Events events = service.events().list(calendarId)
-                    .setTimeMin(startDateTime)
-                    .setTimeMax(endDateTime)
-                    .setSingleEvents(true)
-                    .execute();
-    		// TODO: Filter the events using set() after service.events().list(calendarId)
-    		
-    		// Filter the events by the booking event's location
-    		List<Event> filteredEvents = events.getItems().stream()
-	    	        .filter(evnt -> 
-	    	          evnt.getLocation().equals(bookingEvent.getLocation()))
-	    	        .collect(Collectors.toList());
-    		// Create the event only if there are previous events in that time frame for that location
-    		if(filteredEvents.isEmpty()) {
-    			Event event = new Event()
-				    .setSummary(bookingEvent.getName())
-				    .setLocation(bookingEvent.getLocation())
-				    .setDescription(bookingEvent.getDescription());
-		
-				EventDateTime start = new EventDateTime()
-				    .setDateTime(startDateTime)
-				    .setTimeZone("America/Los_Angeles");
-				event.setStart(start);
-		
-				EventDateTime end = new EventDateTime()
-				    .setDateTime(endDateTime)
-				    .setTimeZone("America/Los_Angeles");
-				event.setEnd(end);
-				
-				EventAttendee[] attendees = new EventAttendee[] {
-				    new EventAttendee().setEmail(bookingEvent.getAttendeeEmail()),
-				};
-				event.setAttendees(Arrays.asList(attendees));
-				
-				event = service.events().insert(calendarId, event).execute();
-		        return new ResponseEntity<>(event, HttpStatus.OK);
+	    		Events events = service.events().list(calendarId)
+	                    .setTimeMin(startDateTime)
+	                    .setTimeMax(endDateTime)
+	                    .setSingleEvents(true)
+	                    .execute();
+	    		// TODO: Filter the events using set() after service.events().list(calendarId)
+	    		
+	    		// Filter the events by the booking event's location
+	    		List<Event> filteredEvents = events.getItems().stream()
+		    	        .filter(evnt -> 
+		    	          evnt.getLocation().equals(bookingEvent.getLocation())
+		    	          || evnt.getAttendees().stream().filter(o -> o.getEmail().equals(bookingEvent.getAttendeeEmail())).findFirst().isPresent() 
+		    	        )
+		    	        .collect(Collectors.toList());
+	    		// Create the event only if there are previous events in that time frame for that location
+	    		if(filteredEvents.isEmpty()) {
+	    			Event event = new Event()
+					    .setSummary(bookingEvent.getName())
+					    .setLocation(bookingEvent.getLocation())
+					    .setDescription(bookingEvent.getDescription());
+			
+					EventDateTime start = new EventDateTime()
+					    .setDateTime(startDateTime)
+					    .setTimeZone("America/Los_Angeles");
+					event.setStart(start);
+			
+					EventDateTime end = new EventDateTime()
+					    .setDateTime(endDateTime)
+					    .setTimeZone("America/Los_Angeles");
+					event.setEnd(end);
+					
+					EventAttendee[] attendees = new EventAttendee[] {
+					    new EventAttendee().setEmail(bookingEvent.getAttendeeEmail()),
+					};
+					event.setAttendees(Arrays.asList(attendees));
+					
+					event = service.events().insert(calendarId, event).execute();
+			        return new ResponseEntity<>(event, HttpStatus.OK);
+	    		} else {
+	    			// If an event already exists in that time range for that location
+	    			if(filteredEvents.stream().filter(o -> o.getLocation().equals(bookingEvent.getLocation())).findFirst().isPresent()) {
+	    				return new ResponseEntity<>(null, HttpStatus.valueOf(420));
+	    			} else {
+	    				// If an event exists for that user elsewhere
+	    				return new ResponseEntity<>(null, HttpStatus.valueOf(421));
+	    			}
+	    			
+	    		}
     		} else {
-    			// If an event already exists in that time range for that location
-    			return new ResponseEntity<>(null, HttpStatus.NOT_ACCEPTABLE);
+    			// If start time is before the current time
+    			return new ResponseEntity<>(null, HttpStatus.valueOf(419));
     		}
 	    	
     	} catch(Exception e) {
