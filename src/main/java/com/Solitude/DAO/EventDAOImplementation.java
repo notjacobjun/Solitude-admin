@@ -1,4 +1,4 @@
-package com.Solitude.Service;
+package com.Solitude.DAO;
 
 import org.springframework.stereotype.Service;
 

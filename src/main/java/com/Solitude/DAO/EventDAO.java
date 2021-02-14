@@ -1,4 +1,4 @@
-package com.Solitude.Service;
+package com.Solitude.DAO;
 
 public interface EventDAO {
     public void BookEvent(int startTime, int endTime, int numberOfUsers);

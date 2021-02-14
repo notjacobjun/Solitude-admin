@@ -1,25 +1,29 @@
 package com.Solitude.Entity;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+// double-check that this would work in postgres
+@Entity
+@Table(name = "Location")
 public class Location {
-    private String name;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    private int locationID;
+    @Column(name = "locationName")
+    private String locationName;
+    @Column(name = "maxCapacity")
     private int maxCapacity;
+
+    public Location() {
+    }
+
+    @Column(name = "current#OfAttendees")
     private int currentNumberOfAttendees;
-    private int id;
-
-    public Location(String name, int maxCapacity, int currentNumberOfAttendees, int id) {
-        this.name = name;
-        this.maxCapacity = maxCapacity;
-        this.currentNumberOfAttendees = currentNumberOfAttendees;
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public int getMaxCapacity() {
         return maxCapacity;
@@ -37,12 +41,33 @@ public class Location {
         this.currentNumberOfAttendees = currentNumberOfAttendees;
     }
 
-    public int getId() {
-        return id;
+    public int getLocationID() {
+        return locationID;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setLocationID(int locationID) {
+        this.locationID = locationID;
+    }
+
+    public Location(int locationID, String locationName, int maxCapacity, int currentNumberOfAttendees) {
+        this.locationID = locationID;
+        this.locationName = locationName;
+        this.maxCapacity = maxCapacity;
+        this.currentNumberOfAttendees = currentNumberOfAttendees;
+    }
+
+    public String getName() {
+        return locationName;
+    }
+
+    public void setName(String locationName) {
+        this.locationName = locationName;
+    }
+
+    @Override
+    public String toString() {
+        return "Location [currentNumberOfAttendees=" + currentNumberOfAttendees + ", locationID=" + locationID
+                + ", locationName=" + locationName + ", maxCapacity=" + maxCapacity + "]";
     }
 
 }
