@@ -1,6 +1,6 @@
 package com.Solitude.Repository;
 
-import com.Solitude.RESTHelpers.BookingEvent;
+import com.Solitude.Entity.BookingEvent;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
