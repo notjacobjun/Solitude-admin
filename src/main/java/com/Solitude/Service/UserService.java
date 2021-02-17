@@ -2,6 +2,7 @@ package com.Solitude.Service;
 
 import com.Solitude.Entity.User;
 import com.Solitude.Entity.BookingEvent;
+import com.Solitude.RESTHelper.BookingEvent;
 
 public interface UserService {
 

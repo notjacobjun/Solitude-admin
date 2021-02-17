@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.Solitude.Entity.BookingEvent;
+import com.Solitude.RESTHelper.BookingEvent;
 import com.Solitude.util.GoogleCalendar;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
@@ -105,7 +105,7 @@ public class EventController {
 				// that user
 				if (filteredEvents.isEmpty()) {
 					Event event = new Event().setSummary(bookingEvent.getName())
-							.setLocation(bookingEvent.getLocation().getName())
+							.setLocation(bookingEvent.getLocation())
 							.setDescription(bookingEvent.getDescription());
 
 					EventDateTime start = new EventDateTime().setDateTime(startDateTime)

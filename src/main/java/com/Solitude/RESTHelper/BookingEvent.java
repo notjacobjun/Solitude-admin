@@ -1,23 +1,18 @@
-package com.Solitude.Entity;
+package com.Solitude.RESTHelper;
 
 import javax.persistence.Column;
-import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Table;
 
-import com.Solitude.Entity.Location;
-
-// TODO label the columns with the postgres DB
 public class BookingEvent {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Id
 	private int ID;
 	@Column(name = "eventName")
-	private String eventName;
+	private String name;
 	@Column(name = "location")
-	private Location location;
+	private String location;
 	@Column(name = "description")
 	private String description;
 	@Column(name = "partyNumber")
@@ -36,19 +31,45 @@ public class BookingEvent {
 	}
 
 	public String getName() {
-		return eventName;
+		return name;
 	}
 
 	public void setName(String name) {
-		this.eventName = name;
+		this.name = name;
 	}
 
-	public Location getLocation() {
+	@Override
+	public String toString() {
+		return "BookingEvent{" +
+				"ID=" + ID +
+				", eventName='" + name + '\'' +
+				", location='" + location + '\'' +
+				", description='" + description + '\'' +
+				", partyNumber=" + partyNumber +
+				", checkedIn=" + checkedIn +
+				", startTime='" + startTime + '\'' +
+				", endTime='" + endTime + '\'' +
+				", attendeeEmail='" + attendeeEmail + '\'' +
+				'}';
+	}
+	public String getLocation() {
 		return location;
 	}
 
-	public void setLocation(Location location) {
+	public void setLocation(String location) {
 		this.location = location;
+	}
+
+	public BookingEvent(int ID, String eventName, String location, String description, int partyNumber, boolean checkedIn, String startTime, String endTime, String attendeeEmail) {
+		this.ID = ID;
+		this.name = eventName;
+		this.location = location;
+		this.description = description;
+		this.partyNumber = partyNumber;
+		this.checkedIn = checkedIn;
+		this.startTime = startTime;
+		this.endTime = endTime;
+		this.attendeeEmail = attendeeEmail;
 	}
 
 	public String getDescription() {
@@ -99,18 +120,7 @@ public class BookingEvent {
 		this.checkedIn = checkedIn;
 	}
 
-	public BookingEvent(String name, Location location, String description, int iD, int partyNumber, boolean checkedIn,
-			String startTime, String endTime, String attendeeEmail) {
-		this.eventName = name;
-		this.location = location;
-		this.description = description;
-		ID = iD;
-		this.partyNumber = partyNumber;
-		this.checkedIn = checkedIn;
-		this.startTime = startTime;
-		this.endTime = endTime;
-		this.attendeeEmail = attendeeEmail;
-	}
+
 
 	public int getID() {
 		return ID;
@@ -120,10 +130,5 @@ public class BookingEvent {
 		ID = iD;
 	}
 
-	@Override
-	public String toString() {
-		return "BookingEvent [ID=" + ID + ", attendeeEmail=" + attendeeEmail + ", checkedIn=" + checkedIn
-				+ ", description=" + description + ", endTime=" + endTime + ", location=" + location + ", name="
-				+ eventName + ", partyNumber=" + partyNumber + ", startTime=" + startTime + "]";
-	}
+
 }

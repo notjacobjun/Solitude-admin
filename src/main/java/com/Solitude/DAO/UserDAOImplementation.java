@@ -13,6 +13,7 @@ import java.util.List;
 @Repository
 public class UserDAOImplementation implements UserDAO {
 
+    // TODO fix this bug
     @Autowired
     private SessionFactory sessionFactory;
 
@@ -28,6 +29,7 @@ public class UserDAOImplementation implements UserDAO {
     public List<User> getAllUsers() {
         Session currentSession = sessionFactory.getCurrentSession();
 
+        // figure out why this isn't working
         Query query = currentSession.createQuery("SELECT * from Users", User.class);
 
         List<User> users = query.getResultList();
