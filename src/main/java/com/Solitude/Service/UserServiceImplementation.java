@@ -2,7 +2,7 @@ package com.Solitude.Service;
 
 import com.Solitude.DAO.UserDAOImplementation;
 import com.Solitude.Entity.User;
-import com.Solitude.RESTHelpers.BookingEvent;
+import com.Solitude.Entity.BookingEvent;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +17,7 @@ public class UserServiceImplementation implements UserService {
     // double-check to see if boolean is the right return type
     public boolean checkIn(User user, BookingEvent event) {
         try {
+            // TODO verify using the event ID instead
             // String calendarId = GoogleCalendar.getCalendarId();
             // Calendar service = GoogleCalendar.getService();
 

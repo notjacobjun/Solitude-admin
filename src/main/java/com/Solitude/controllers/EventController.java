@@ -4,8 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.Solitude.Entity.User;
-import com.Solitude.RESTHelpers.BookingEvent;
+import com.Solitude.Entity.BookingEvent;
 import com.Solitude.util.GoogleCalendar;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
@@ -124,6 +123,7 @@ public class EventController {
 					return new ResponseEntity<>(event, HttpStatus.OK);
 				} else {
 					// If an event already exists in that time range for that location
+					// TODO fix this equals statement
 					if (filteredEvents.stream().filter(o -> o.getLocation().equals(bookingEvent.getLocation()))
 							.findFirst().isPresent()) {
 						return new ResponseEntity<>(null, HttpStatus.valueOf(420));

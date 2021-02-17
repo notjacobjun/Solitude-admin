@@ -1,4 +1,4 @@
-package com.Solitude.RESTHelpers;
+package com.Solitude.Entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,8 +10,6 @@ import javax.persistence.Table;
 import com.Solitude.Entity.Location;
 
 // TODO label the columns with the postgres DB
-@Entity
-@Table(name = "BookingEvent")
 public class BookingEvent {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Id
