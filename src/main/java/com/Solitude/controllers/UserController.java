@@ -1,7 +1,7 @@
 package com.Solitude.controllers;
 
 import com.Solitude.Entity.User;
-import com.Solitude.Entity.BookingEvent;
+import com.Solitude.RESTHelper.BookingEvent;
 import com.Solitude.Service.UserServiceImplementation;
 
 import org.slf4j.Logger;

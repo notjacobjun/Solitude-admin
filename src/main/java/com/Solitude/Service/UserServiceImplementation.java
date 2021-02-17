@@ -2,8 +2,8 @@ package com.Solitude.Service;
 
 import com.Solitude.DAO.UserDAOImplementation;
 import com.Solitude.Entity.User;
-import com.Solitude.Entity.BookingEvent;
 
+import com.Solitude.RESTHelper.BookingEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,22 +13,18 @@ public class UserServiceImplementation implements UserService {
     @Autowired
     UserDAOImplementation UserDAOImplementation;
 
+    // TODO implement the checkin API
     @Override
     // double-check to see if boolean is the right return type
     public boolean checkIn(User user, BookingEvent event) {
         try {
-            // TODO verify using the event ID instead
+            // verify using the id instead of email
             // String calendarId = GoogleCalendar.getCalendarId();
             // Calendar service = GoogleCalendar.getService();
 
             // check if the user matches the event (using email for now but later use
             // generated code)
             if (user.getEmail().equalsIgnoreCase(event.getAttendeeEmail())) {
-                // mark that the user is there right now (for checkout purposes and live
-                // attendee count)
-                event.getLocation().setCurrentNumberOfAttendees(
-                        event.getLocation().getCurrentNumberOfAttendees() + event.getPartyNumber());
-                // double check if we need this or if this is redundant
                 event.setCheckedIn(true);
                 return true;
             }
@@ -39,13 +35,11 @@ public class UserServiceImplementation implements UserService {
         }
     }
 
+    // TODO implement the checkout API
     @Override
     public boolean checkOut(User user, BookingEvent event) {
         try {
             if (user.getEmail().equalsIgnoreCase(event.getAttendeeEmail()) && event.isCheckedIn()) {
-                int currentNumberOfAttendees = event.getLocation().getCurrentNumberOfAttendees();
-                event.getLocation().setCurrentNumberOfAttendees(currentNumberOfAttendees - event.getPartyNumber());
-                return true;
             }
         } catch (Exception e) {
             e.printStackTrace();
