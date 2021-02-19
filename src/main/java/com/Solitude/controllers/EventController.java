@@ -1,147 +1,117 @@
 package com.Solitude.controllers;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import com.Solitude.RESTHelper.BookingEvent;
+import com.Solitude.Entity.BookingEvent;
+import com.Solitude.Exception.ResourceNotFoundException;
+import com.Solitude.Repository.EventRepository;
+import com.Solitude.Repository.LocationRepository;
 import com.Solitude.util.GoogleCalendar;
-import com.google.api.client.util.DateTime;
-import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
-import com.google.api.services.calendar.model.EventAttendee;
-import com.google.api.services.calendar.model.EventDateTime;
-import com.google.api.services.calendar.model.Events;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/events")
 public class EventController {
 
-	private static final Logger logger = LoggerFactory.getLogger(EventController.class);
+    private static final Logger logger = LoggerFactory.getLogger(EventController.class);
 
-	// TODO: Add firebase authentication
-	@RequestMapping(value = "/upcoming/{location}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<Event>> getUpcomingEvents(@PathVariable("location") String location,
-			@RequestParam(name = "size") Integer size) {
-		try {
-			// FirebaseToken decodedToken =
-			// FirebaseAuth.getInstance().verifyIdToken(idToken);
-			// String uid = decodedToken.getUid();
+    @Autowired
+    private EventRepository eventRepository;
 
-			// TODO: Verify if the location belongs to the uid in Postgres
+    @Autowired
+    private LocationRepository locationRepository;
 
-			List<Event> events = GoogleCalendar.getUpcomingEventsByLocation(location, size);
-			logger.debug("Found {} upcoming events", events.size());
-			return new ResponseEntity<>(events, HttpStatus.OK);
-		} catch (Exception e) {
-			logger.error("Internal error {} ", e.getMessage());
-			e.printStackTrace();
-			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+//    // TODO: Add firebase authentication
+//    @RequestMapping(value = "/upcoming/{location}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<List<Event>> getUpcomingEvents(@PathVariable("location") String location,
+//                                                         @RequestParam(name = "size") Integer size) {
+//        try {
+//            // FirebaseToken decodedToken =
+//            // FirebaseAuth.getInstance().verifyIdToken(idToken);
+//            // String uid = decodedToken.getUid();
+//
+//            // TODO: Verify if the location belongs to the uid in Postgres
+//
+//            List<Event> events = GoogleCalendar.getUpcomingEventsByLocation(location, size);
+//            logger.debug("Found {} upcoming events", events.size());
+//            return new ResponseEntity<>(events, HttpStatus.OK);
+//        } catch (Exception e) {
+//            logger.error("Internal error {} ", e.getMessage());
+//            e.printStackTrace();
+//            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
+//
+//    @RequestMapping(value = "/history/{location}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<List<Event>> getHistory(@PathVariable("location") String location,
+//                                                  @RequestParam(name = "size") Integer size) {
+//        try {
+//            // FirebaseToken decodedToken =
+//            // FirebaseAuth.getInstance().verifyIdToken(idToken);
+//            // String uid = decodedToken.getUid();
+//
+//            // TODO: Verify if the location belongs to the uid in Postgres
+//
+//            List<Event> events = GoogleCalendar.getPastEventsByLocation(location, size);
+//            logger.debug("Found {} past events", events.size());
+//            return new ResponseEntity<>(events, HttpStatus.OK);
+//        } catch (Exception e) {
+//            logger.error("Internal error {} ", e.getMessage());
+//            e.printStackTrace();
+//            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
-	}
+    @GetMapping("/location/{locationId}/events")
+    public Page<BookingEvent> getAllEventsByLocationId(@PathVariable(value = "locationId") Long locationId, Pageable pageable) {
+        return eventRepository.findByLocationId(locationId, pageable);
+    }
 
-	@RequestMapping(value = "/history/{location}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<Event>> getHistory(@PathVariable("location") String location,
-			@RequestParam(name = "size") Integer size) {
-		try {
-			// FirebaseToken decodedToken =
-			// FirebaseAuth.getInstance().verifyIdToken(idToken);
-			// String uid = decodedToken.getUid();
+    // creates new event based on @RequestBody event parameters given
+    @PostMapping("/location/{locationId}/events")
+    public BookingEvent createBookingEvent(@PathVariable(value = "locationId") Long locationid, @Valid @RequestBody BookingEvent bookingEvent) {
+        return locationRepository.findById(locationid).map(location -> {
+            bookingEvent.setLocation(location);
+            return eventRepository.save(bookingEvent);
+        }).orElseThrow(() -> new ResourceNotFoundException("LocationId " + locationid + " not found"));
+    }
 
-			// TODO: Verify if the location belongs to the uid in Postgres
+    // updates the event baesd the @RequestBody event parameters given
+    @PutMapping("/locations/{locationId}/events/{eventId}")
+    public BookingEvent updateBookingEvent(@PathVariable (value = "eventId") Long eventId, @PathVariable (value = "locationId") Long locationid, @Valid @RequestBody BookingEvent eventRequest) {
+        if(!eventRepository.existsById(eventId)) {
+            throw new ResourceNotFoundException("EventId " + eventId + " not found");
+        }
 
-			List<Event> events = GoogleCalendar.getPastEventsByLocation(location, size);
-			logger.debug("Found {} past events", events.size());
-			return new ResponseEntity<>(events, HttpStatus.OK);
-		} catch (Exception e) {
-			logger.error("Internal error {} ", e.getMessage());
-			e.printStackTrace();
-			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+        return eventRepository.findById(eventId).map(event -> {
+            event.setName(eventRequest.getName());
+            if(eventRequest.getDescription() != null) {
+                event.setDescription(eventRequest.getDescription());
+            }
+            event.setPartyNumber(eventRequest.getPartyNumber());
+            event.setStartTime(eventRequest.getStartTime());
+            event.setEndTime(eventRequest.getEndTime());
+            event.setAttendeeEmail(eventRequest.getAttendeeEmail());
+            return eventRepository.save(event);
+        }).orElseThrow(() -> new ResourceNotFoundException("EventId " + eventId + " not found"));
+    }
 
-	}
-
-	// TODO: Add firebase authentication
-	@RequestMapping(value = "/create", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> createEvent(@RequestBody BookingEvent bookingEvent) {
-		try {
-			// FirebaseToken decodedToken =
-			// FirebaseAuth.getInstance().verifyIdToken(idToken);
-			// String uid = decodedToken.getUid();
-
-			String calendarId = GoogleCalendar.getCalendarId();
-			Calendar service = GoogleCalendar.getService();
-
-			DateTime startDateTime = new DateTime(bookingEvent.getStartTime());
-			DateTime endDateTime = new DateTime(bookingEvent.getEndTime());
-
-			// Check if start time is after the current time
-			if (startDateTime.getValue() >= System.currentTimeMillis()) {
-
-				Events events = service.events().list(calendarId).setTimeMin(startDateTime).setTimeMax(endDateTime)
-						.setSingleEvents(true).execute();
-				// TODO: Filter the events using set() after service.events().list(calendarId)
-
-				// Filter the events by the booking event's location
-				List<Event> filteredEvents = events.getItems().stream()
-						.filter(evnt -> evnt.getAttendees().stream()
-								.filter(o -> o.getEmail().equals(bookingEvent.getAttendeeEmail())).findFirst()
-								.isPresent())
-						.collect(Collectors.toList());
-				// Create the event only if there are no previous events in that time frame for
-				// that user
-				if (filteredEvents.isEmpty()) {
-					Event event = new Event().setSummary(bookingEvent.getName())
-							.setLocation(bookingEvent.getLocation())
-							.setDescription(bookingEvent.getDescription());
-
-					EventDateTime start = new EventDateTime().setDateTime(startDateTime)
-							.setTimeZone("America/Los_Angeles");
-					event.setStart(start);
-
-					EventDateTime end = new EventDateTime().setDateTime(endDateTime).setTimeZone("America/Los_Angeles");
-					event.setEnd(end);
-
-					EventAttendee[] attendees = new EventAttendee[] {
-							new EventAttendee().setEmail(bookingEvent.getAttendeeEmail()), };
-					event.setAttendees(Arrays.asList(attendees));
-
-					event = service.events().insert(calendarId, event).execute();
-					return new ResponseEntity<>(event, HttpStatus.OK);
-				} else {
-					// If an event already exists in that time range for that location
-					// TODO fix this equals statement
-					if (filteredEvents.stream().filter(o -> o.getLocation().equals(bookingEvent.getLocation()))
-							.findFirst().isPresent()) {
-						return new ResponseEntity<>(null, HttpStatus.valueOf(420));
-					} else {
-						// If an event exists for that user elsewhere
-						return new ResponseEntity<>(null, HttpStatus.valueOf(421));
-					}
-
-				}
-			} else {
-				// If start time is before the current time
-				return new ResponseEntity<>(null, HttpStatus.valueOf(419));
-			}
-
-		} catch (Exception e) {
-			logger.error("Internal error {} ", e.getMessage());
-			e.printStackTrace();
-			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
+    // TODO configure the optimal cascade settings for this deletion
+    @DeleteMapping("/locations/{locationId}/events/{eventId}")
+    public ResponseEntity<?> deleteEvent(@PathVariable(value = "locationId") Long locationId,
+                                         @PathVariable(value = "eventId") Long eventId) {
+        return eventRepository.findByIdAndLocationId(locationId, eventId).map(event -> {
+            eventRepository.delete(event);
+            return ResponseEntity.ok().build();
+        }).orElseThrow(() -> new ResourceNotFoundException("Event not found with id " + eventId + " and locationId" + locationId));
+    }
 }

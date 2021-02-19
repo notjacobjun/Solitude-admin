@@ -1,3 +1,17 @@
+<<<<<<< HEAD:src/main/java/com/Solitude/Entity/BookingEvent.java
+package com.Solitude.Entity;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+
+import com.Solitude.Entity.Location;
+
+// TODO consider adding javax validation annotaions for each field if not already done so on the frontend
+@Entity
+@Table(name = "BookingEvent")
+public class BookingEvent extends AuditModel{
+	// should I use auto or identity
+=======
 package com.Solitude.RESTHelper;
 
 import javax.persistence.Column;
@@ -6,13 +20,22 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 public class BookingEvent {
+>>>>>>> 66263f063fd52381b289742d6cf92325e093fec2:src/main/java/com/Solitude/RESTHelper/BookingEvent.java
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Id
 	private int ID;
 	@Column(name = "eventName")
+<<<<<<< HEAD:src/main/java/com/Solitude/Entity/BookingEvent.java
+	private String eventName;
+	@ManyToOne
+	// double check that this is the right column name
+	@JoinColumn(name = "location_id", nullable = false)
+	private Location location;
+=======
 	private String name;
 	@Column(name = "location")
 	private String location;
+>>>>>>> 66263f063fd52381b289742d6cf92325e093fec2:src/main/java/com/Solitude/RESTHelper/BookingEvent.java
 	@Column(name = "description")
 	private String description;
 	@Column(name = "partyNumber")
