@@ -1,5 +1,9 @@
 package com.Solitude.Repository;
 
+<<<<<<< HEAD
+=======
+import com.Solitude.Entity.BookingEvent;
+>>>>>>> 66263f063fd52381b289742d6cf92325e093fec2
 
 import com.Solitude.Entity.BookingEvent;
 import org.springframework.data.domain.Page;

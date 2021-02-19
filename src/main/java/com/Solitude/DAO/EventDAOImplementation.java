@@ -1,18 +1,18 @@
 package com.Solitude.DAO;
 
+import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EventDAOImplementation implements EventDAO {
 
-    @Override
-    public void BookEvent(int startTime, int endTime, int numberOfUsers) {
-
-    }
+    @Autowired
+    SessionFactory sessionFactory;
 
     @Override
+    // don't think this is necessary either
     public void RegisterUser(String name, String email, int phoneNumber) {
-
     }
 
 }

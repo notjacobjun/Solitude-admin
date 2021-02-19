@@ -4,10 +4,16 @@ import com.Solitude.Entity.User;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
+@Repository
 public class UserDAOImplementation implements UserDAO {
 
+    // TODO fix this bug
     @Autowired
     private SessionFactory sessionFactory;
 
@@ -19,4 +25,14 @@ public class UserDAOImplementation implements UserDAO {
         return currentSession.get(User.class, userId);
     }
 
+    @Override
+    public List<User> getAllUsers() {
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        // figure out why this isn't working
+        Query query = currentSession.createQuery("SELECT * from Users", User.class);
+
+        List<User> users = query.getResultList();
+        return users;
+    }
 }
