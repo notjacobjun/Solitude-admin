@@ -3,7 +3,7 @@ package com.Solitude.Service;
 import com.Solitude.DAO.UserDAOImplementation;
 import com.Solitude.Entity.User;
 
-import com.Solitude.RESTHelper.BookingEvent;
+import com.Solitude.Entity.BookingEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

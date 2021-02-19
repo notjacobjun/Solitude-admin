@@ -21,7 +21,7 @@ public class Location extends AuditModel{
     public Location() {
     }
 
-    @Column(name = "current#OfAttendees")
+    @Column(name = "currentNoOfAttendees")
     private int currentNumberOfAttendees;
 
     public int getMaxCapacity() {
