@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 -- include this if for encryption
 CREATE EXTENSION IF NOT EXISTS "pgcrypto"
 
@@ -14,7 +13,6 @@ CREATE TABLE Location(locationID PRIMARY KEY, locationName varchar(255), maxCapa
 
 DROP TABLE IF EXISTS Admin 
 CREATE TABLE Admin(adminName varchar(255), email varchar(255), adminPassword varchar(255));
-=======
 -- -- include this if for encryption
 -- -- CREATE EXTENSION IF NOT EXISTS "pgcrypto"
 -- SET DATABASE_URL = soltiudeadmin:AQYJ@localhost/soltiudeadmin
@@ -31,4 +29,3 @@ CREATE TABLE Admin(adminName varchar(255), email varchar(255), adminPassword var
 --
 -- DROP TABLE IF EXISTS Admin
 -- CREATE TABLE Admin(adminName varchar(255), email varchar(255), adminPassword varchar(255));
->>>>>>> 66263f063fd52381b289742d6cf92325e093fec2
