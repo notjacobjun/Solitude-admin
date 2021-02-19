@@ -1,24 +1,23 @@
-package com.Solitude.RESTHelpers;
+package com.Solitude.Entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 import com.Solitude.Entity.Location;
 
-// TODO label the columns with the postgres DB
+// TODO consider adding javax validation annotaions for each field if not already done so on the frontend
 @Entity
 @Table(name = "BookingEvent")
-public class BookingEvent {
+public class BookingEvent extends AuditModel{
+	// should I use auto or identity
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Id
 	private int ID;
 	@Column(name = "eventName")
 	private String eventName;
-	@Column(name = "location")
+	@ManyToOne
+	// double check that this is the right column name
+	@JoinColumn(name = "location_id", nullable = false)
 	private Location location;
 	@Column(name = "description")
 	private String description;

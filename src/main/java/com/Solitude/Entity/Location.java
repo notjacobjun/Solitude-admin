@@ -1,23 +1,22 @@
 package com.Solitude.Entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.Set;
 
 // double-check that this would work in postgres
 @Entity
 @Table(name = "Location")
-public class Location {
+public class Location extends AuditModel{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "location_id")
     @Id
     private int locationID;
     @Column(name = "locationName")
     private String locationName;
     @Column(name = "maxCapacity")
     private int maxCapacity;
+    @OneToMany(mappedBy = "location")
+    private Set<BookingEvent> events;
 
     public Location() {
     }
