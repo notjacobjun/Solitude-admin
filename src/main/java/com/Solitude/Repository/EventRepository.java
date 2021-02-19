@@ -2,7 +2,6 @@ package com.Solitude.Repository;
 
 import com.Solitude.Entity.BookingEvent;
 
-import com.Solitude.Entity.BookingEvent;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

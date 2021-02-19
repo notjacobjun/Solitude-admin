@@ -23,8 +23,6 @@ public class BookingEvent extends AuditModel {
     private String description;
     @Column(name = "partyNumber")
     private int partyNumber;
-    @Column(name = "checkIn")
-    private boolean checkedIn;
     @Column(name = "startTime")
     private String startTime;
     @Column(name = "endTime")
@@ -76,15 +74,6 @@ public class BookingEvent extends AuditModel {
         this.partyNumber = partyNumber;
     }
 
-    public boolean isCheckedIn() {
-        return checkedIn;
-    }
-
-    public void setCheckedIn(boolean checkedIn) {
-        this.checkedIn = checkedIn;
-    }
-
-
     public int getID() {
         return ID;
     }
@@ -93,32 +82,20 @@ public class BookingEvent extends AuditModel {
         ID = iD;
     }
 
-    public String getEventName() {
-        return eventName;
-    }
-
     public Location getLocation() {
         return location;
-    }
-
-    public void setEventName(String eventName) {
-        this.eventName = eventName;
     }
 
     public void setLocation(Location location) {
         this.location = location;
     }
 
-    public BookingEvent(int ID, String eventName, Location location, String description, int partyNumber, boolean checkedIn, String startTime, String endTime, String attendeeEmail) {
-        this.ID = ID;
+    public String getName() {
+        return eventName;
+    }
+
+    public void setName(String eventName) {
         this.eventName = eventName;
-        this.location = location;
-        this.description = description;
-        this.partyNumber = partyNumber;
-        this.checkedIn = checkedIn;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.attendeeEmail = attendeeEmail;
     }
 
     @Override
@@ -129,11 +106,20 @@ public class BookingEvent extends AuditModel {
                 ", location=" + location +
                 ", description='" + description + '\'' +
                 ", partyNumber=" + partyNumber +
-                ", checkedIn=" + checkedIn +
                 ", startTime='" + startTime + '\'' +
                 ", endTime='" + endTime + '\'' +
                 ", attendeeEmail='" + attendeeEmail + '\'' +
                 '}';
     }
 
+    public BookingEvent(int ID, String eventName, Location location, String description, int partyNumber, String startTime, String endTime, String attendeeEmail) {
+        this.ID = ID;
+        this.eventName = eventName;
+        this.location = location;
+        this.description = description;
+        this.partyNumber = partyNumber;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.attendeeEmail = attendeeEmail;
+    }
 }

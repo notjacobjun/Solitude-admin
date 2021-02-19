@@ -14,18 +14,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
 @RestController
-// TODO map all the endpoints properly
 public class EventController {
 
     private static final Logger logger = LoggerFactory.getLogger(EventController.class);
+
     @Autowired
     private EventRepository eventRepository;
 
@@ -73,38 +71,47 @@ public class EventController {
 //        }
 //    }
 
-    @GetMapping("/{eventId}/")
-    // TODO change this method parameter to be linked to corresponding Location
-    public Page<BookingEvent> getAllEvents(Pageable pageable) {
-        return eventRepository.findByLocationId(pageable);
+    @GetMapping("/location/{locationId}/events")
+    public Page<BookingEvent> getAllEventsByLocationId(@PathVariable(value = "locationId") Long locationId, Pageable pageable) {
+        return eventRepository.findByLocationId(locationId, pageable);
     }
 
-    @PostMapping("/")
-    // If you odn't add the javax annotations to the entities then get rid of this valid annotation
-    public BookingEvent createBookingEvent(@PathVariable (value = "locationId") Long locationid, @Valid @RequestBody BookingEvent bookingEvent) {
+    // creates new event based on @RequestBody event parameters given
+    @PostMapping("/location/{locationId}/events")
+    public BookingEvent createBookingEvent(@PathVariable(value = "locationId") Long locationid, @Valid @RequestBody BookingEvent bookingEvent) {
         return locationRepository.findById(locationid).map(location -> {
             bookingEvent.setLocation(location);
             return eventRepository.save(bookingEvent);
         }).orElseThrow(() -> new ResourceNotFoundException("LocationId " + locationid + " not found"));
     }
 
-    @PutMapping("/{eventId}")
-    public BookingEvent updateBookingEvent(@PathVariable long eventId, @Valid @RequestBody BookingEvent bookingEvent) {
+    // updates the event baesd the @RequestBody event parameters given
+    @PutMapping("/locations/{locationId}/events/{eventId}")
+    public BookingEvent updateBookingEvent(@PathVariable (value = "eventId") Long eventId, @PathVariable (value = "locationId") Long locationid, @Valid @RequestBody BookingEvent eventRequest) {
+        if(!eventRepository.existsById(eventId)) {
+            throw new ResourceNotFoundException("EventId " + eventId + " not found");
+        }
+
         return eventRepository.findById(eventId).map(event -> {
-            // why aren't these working???
-            event.setName(bookingEvent.getName());
-            event.setDescription(bookingEvent.getDescription());
-            event.setPartyNumber(bookingEvent.getPartyNumber());
+            event.setName(eventRequest.getName());
+            if(eventRequest.getDescription() != null) {
+                event.setDescription(eventRequest.getDescription());
+            }
+            event.setPartyNumber(eventRequest.getPartyNumber());
+            event.setStartTime(eventRequest.getStartTime());
+            event.setEndTime(eventRequest.getEndTime());
+            event.setAttendeeEmail(eventRequest.getAttendeeEmail());
             return eventRepository.save(event);
         }).orElseThrow(() -> new ResourceNotFoundException("EventId " + eventId + " not found"));
     }
 
-    // TODO fix this method body
-    @DeleteMapping("/{eventId}")
-    public ResponseEntity<?> deletePost(@PathVariable Long eventId) {
-        return eventRepository.findById(eventId).map(event -> {
+    // TODO configure the optimal cascade settings for this deletion
+    @DeleteMapping("/locations/{locationId}/events/{eventId}")
+    public ResponseEntity<?> deleteEvent(@PathVariable(value = "locationId") Long locationId,
+                                         @PathVariable(value = "eventId") Long eventId) {
+        return eventRepository.findByIdAndLocationId(locationId, eventId).map(event -> {
             eventRepository.delete(event);
             return ResponseEntity.ok().build();
-        }).orElseThrow(() -> new ResourceNotFoundException("EventId " + eventId + " not found"));
+        }).orElseThrow(() -> new ResourceNotFoundException("Event not found with id " + eventId + " and locationId" + locationId));
     }
 }
