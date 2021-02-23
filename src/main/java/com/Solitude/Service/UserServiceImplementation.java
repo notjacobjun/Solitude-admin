@@ -1,17 +1,13 @@
 package com.Solitude.Service;
 
-import com.Solitude.DAO.UserDAOImplementation;
+import com.Solitude.Entity.BookingEvent;
 import com.Solitude.Entity.User;
 
-import com.Solitude.RESTHelper.BookingEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserServiceImplementation implements UserService {
-
-    @Autowired
-    UserDAOImplementation UserDAOImplementation;
 
     // TODO implement the checkin API
     @Override
@@ -25,7 +21,6 @@ public class UserServiceImplementation implements UserService {
             // check if the user matches the event (using email for now but later use
             // generated code)
             if (user.getEmail().equalsIgnoreCase(event.getAttendeeEmail())) {
-                event.setCheckedIn(true);
                 return true;
             }
             return false;
@@ -39,16 +34,12 @@ public class UserServiceImplementation implements UserService {
     @Override
     public boolean checkOut(User user, BookingEvent event) {
         try {
-            if (user.getEmail().equalsIgnoreCase(event.getAttendeeEmail()) && event.isCheckedIn()) {
+            if (user.getEmail().equalsIgnoreCase(event.getAttendeeEmail())) {
+                return true;
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return false;
     }
-
-    public User getUser(int userId) {
-        return UserDAOImplementation.getUser(userId);
-    }
-
 }

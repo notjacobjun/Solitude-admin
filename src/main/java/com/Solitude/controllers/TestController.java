@@ -1,8 +1,10 @@
 package com.Solitude.controllers;
 
 import java.util.List;
+import java.util.Set;
 
 import com.Solitude.Entity.User;
+import com.Solitude.Repository.UserRepository;
 import com.Solitude.Service.UserServiceImplementation;
 import com.Solitude.util.GoogleCalendar;
 import com.google.api.services.calendar.model.Event;
@@ -14,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -29,6 +32,9 @@ public class TestController {
     private static final Logger logger = LoggerFactory.getLogger(TestController.class);
     @Autowired
     UserServiceImplementation UserServiceImplementation;
+
+    @Autowired
+    UserRepository userRepository;
 
     @RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> get(@RequestHeader("token") String idToken) throws FirebaseAuthException {
@@ -55,11 +61,10 @@ public class TestController {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-    @GetMapping(value = "/users/{userId}")
-    @ResponseBody
-    public User getUserById(@PathVariable int userId) {
-        User user = UserServiceImplementation.getUser(userId);
-        return user;
+    @GetMapping(value = "/users")
+    public Model getAllUsers(Model model) {
+        List<User> users = userRepository.findAll();
+        model.addAttribute(users);
+        return model;
     }
 }
