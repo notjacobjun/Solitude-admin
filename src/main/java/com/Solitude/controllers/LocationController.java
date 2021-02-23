@@ -31,7 +31,7 @@ public class LocationController {
     @PutMapping("/{locationId}")
     public Location updateLocation(@PathVariable Long locationId, @Valid @RequestBody Location locationRequest) {
         return locationRepository.findById(locationId).map(location -> {
-            location.setName(locationRequest.getName());
+            location.setLocationName(locationRequest.getLocationName());
             location.setLocationID(locationRequest.getLocationID());
             location.setMaxCapacity(locationRequest.getMaxCapacity());
             return locationRepository.save(location);

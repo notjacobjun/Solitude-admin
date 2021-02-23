@@ -1,13 +1,12 @@
 package com.Solitude.controllers;
 
-import java.util.List;
+import java.util.Optional;
 
 import com.Solitude.Entity.BookingEvent;
+import com.Solitude.Entity.Location;
 import com.Solitude.Exception.ResourceNotFoundException;
 import com.Solitude.Repository.EventRepository;
 import com.Solitude.Repository.LocationRepository;
-import com.Solitude.util.GoogleCalendar;
-import com.google.api.services.calendar.model.Event;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +72,8 @@ public class EventController {
 
     @GetMapping("/location/{locationId}/events")
     public Page<BookingEvent> getAllEventsByLocationId(@PathVariable(value = "locationId") Long locationId, Pageable pageable) {
-        return eventRepository.findByLocationId(locationId, pageable);
+        Optional<Location> location = locationRepository.findById(locationId);
+        return eventRepository.findByLocation(location, pageable);
     }
 
     // creates new event based on @RequestBody event parameters given
@@ -93,7 +93,7 @@ public class EventController {
         }
 
         return eventRepository.findById(eventId).map(event -> {
-            event.setName(eventRequest.getName());
+            event.setEventName(eventRequest.getEventName());
             if(eventRequest.getDescription() != null) {
                 event.setDescription(eventRequest.getDescription());
             }
@@ -105,11 +105,11 @@ public class EventController {
         }).orElseThrow(() -> new ResourceNotFoundException("EventId " + eventId + " not found"));
     }
 
-    // TODO configure the optimal cascade settings for this deletion
     @DeleteMapping("/locations/{locationId}/events/{eventId}")
     public ResponseEntity<?> deleteEvent(@PathVariable(value = "locationId") Long locationId,
                                          @PathVariable(value = "eventId") Long eventId) {
-        return eventRepository.findByIdAndLocationId(locationId, eventId).map(event -> {
+        Optional<Location> eventLocation = locationRepository.findById(locationId);
+        return eventRepository.findByEventIdAndLocation(eventId, eventLocation).map(event -> {
             eventRepository.delete(event);
             return ResponseEntity.ok().build();
         }).orElseThrow(() -> new ResourceNotFoundException("Event not found with id " + eventId + " and locationId" + locationId));
