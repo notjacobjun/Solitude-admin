@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class GoogleCalendar {
-    private static final String APPLICATION_NAME = "Google Calendar API Java Quickstart";
+    private static final String APPLICATION_NAME = "Solitude";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
 

@@ -29,4 +29,10 @@ public class BookingEvent extends AuditModel {
     private String endTime;
     @Column(name = "attendeeEmail")
     private String attendeeEmail;
+    @Column(name = "userID")
+    private Long userID;
+    @Column(name = "checkedIn")
+    private boolean checkedIn;
+    @Column(name = "checkedOut")
+    private boolean checkedOut;
 }
