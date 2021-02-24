@@ -16,7 +16,7 @@ public class FirebaseConfig {
 
         FileInputStream serviceAccount;
         try {
-            serviceAccount = new FileInputStream("src/solitude-credentials.json");
+            serviceAccount = new FileInputStream("solitude-credentials.json");
 
             FirebaseOptions options = new FirebaseOptions.Builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))

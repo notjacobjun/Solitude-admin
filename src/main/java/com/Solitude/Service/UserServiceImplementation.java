@@ -1,7 +1,8 @@
 package com.Solitude.Service;
 
 import com.Solitude.Entity.BookingEvent;
-import com.Solitude.Entity.User;
+import com.Solitude.RESTHelper.UserCheckInOut;
+import com.Solitude.Repository.EventRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,10 +10,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserServiceImplementation implements UserService {
 
+	@Autowired
+	EventRepository eventRepository;
     // TODO implement the checkin API
     @Override
     // double-check to see if boolean is the right return type
-    public boolean checkIn(User user, BookingEvent event) {
+    public void checkIn(UserCheckInOut user, BookingEvent event) {
         try {
             // verify using the id instead of email
             // String calendarId = GoogleCalendar.getCalendarId();
@@ -20,26 +23,21 @@ public class UserServiceImplementation implements UserService {
 
             // check if the user matches the event (using email for now but later use
             // generated code)
-            if (user.getEmail().equalsIgnoreCase(event.getAttendeeEmail())) {
-                return true;
-            }
-            return false;
+            event.setCheckedIn(user.getUserID() == event.getUserID() && user.getEmail().equalsIgnoreCase(event.getAttendeeEmail()));
+            eventRepository.save(event);
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
         }
     }
 
     // TODO implement the checkout API
     @Override
-    public boolean checkOut(User user, BookingEvent event) {
+    public void checkOut(UserCheckInOut user, BookingEvent event) {
         try {
-            if (user.getEmail().equalsIgnoreCase(event.getAttendeeEmail())) {
-                return true;
-            }
+        	event.setCheckedOut(user.getUserID() == event.getUserID() && user.getEmail().equalsIgnoreCase(event.getAttendeeEmail()));
+        	eventRepository.save(event);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
     }
 }

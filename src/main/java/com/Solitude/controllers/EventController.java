@@ -77,13 +77,13 @@ public class EventController {
     }
 
     // creates new event based on @RequestBody event parameters given
-    @PostMapping("/location/{locationId}/events")
-    public BookingEvent createBookingEvent(@PathVariable(value = "locationId") Long locationid, @Valid @RequestBody BookingEvent bookingEvent) {
-        return locationRepository.findById(locationid).map(location -> {
-            bookingEvent.setLocation(location);
-            return eventRepository.save(bookingEvent);
-        }).orElseThrow(() -> new ResourceNotFoundException("LocationId " + locationid + " not found"));
-    }
+//    @PostMapping("/location/{locationId}/events")
+//    public BookingEvent createBookingEvent(@PathVariable(value = "locationId") Long locationid, @Valid @RequestBody BookingEvent bookingEvent) {
+//        return locationRepository.findById(locationid).map(location -> {
+//            bookingEvent.setLocation(location);
+//            return eventRepository.save(bookingEvent);
+//        }).orElseThrow(() -> new ResourceNotFoundException("LocationId " + locationid + " not found"));
+//    }
 
     // updates the event baesd the @RequestBody event parameters given
     @PutMapping("/locations/{locationId}/events/{eventId}")

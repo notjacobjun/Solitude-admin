@@ -1,7 +1,7 @@
 package com.Solitude.controllers;
 
 import com.Solitude.Entity.BookingEvent;
-import com.Solitude.Entity.User;
+import com.Solitude.RESTHelper.UserCheckInOut;
 import com.Solitude.Service.UserServiceImplementation;
 
 import org.slf4j.Logger;
@@ -22,13 +22,13 @@ public class UserController {
     // later on add another option on top of this option to make the process faster
     // for users
     @PostMapping("/checkin")
-    public ResponseBody checkIn(@RequestBody User user, @RequestBody BookingEvent event) {
+    public ResponseBody checkIn(@RequestBody UserCheckInOut user, @RequestBody BookingEvent event) {
         userService.checkIn(user, event);
         return null;
     }
 
     @PostMapping("/checkout")
-    public ResponseBody checkOut(@RequestBody User user, @RequestBody BookingEvent event) {
+    public ResponseBody checkOut(@RequestBody UserCheckInOut user, @RequestBody BookingEvent event) {
         userService.checkOut(user, event);
         return null;
     }
