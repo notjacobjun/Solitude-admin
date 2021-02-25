@@ -10,9 +10,9 @@ import javax.persistence.*;
 // constructor, getter, setter, toString EqualsAndHashCode
 @Data
 public class BookingEvent extends AuditModel {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // instantiated by Google Calendar API and saved into DB during event creation
     @Id
-    private Long eventId;
+    private String eventId;
     @Column(name = "eventName")
     private String eventName;
     @ManyToOne(fetch = FetchType.LAZY)
