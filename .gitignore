@@ -35,3 +35,6 @@ build/
 solitude-credentials.json
 src/main/resources/credentials.json
 tokens
+
+### Deepcode ###
+.dccache
