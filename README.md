@@ -33,6 +33,10 @@ Then,
 
 `docker build .`
 
+Then to run this entire thing on your local machine via Docker Compose
+
+`docker-compose up -d`
+
 # Firebase
 
 This requires Firebase Admin SDK loaded and saved into a file `solitude-credentials.json` and placed in the root of the project directory. Generate a secret key from your Firebase Project settings > Service Accounts, save it as a JSON file.
