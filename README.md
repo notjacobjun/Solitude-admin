@@ -29,11 +29,13 @@ To build the jar file in a Maven Container:
 
 `$ docker run -it --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn package`
 
+This application requires Firebase Admin SDK included. Get the service account from Firebase console and then place it in the root of your cloned project and name it `solitude-credentials.json`
+
 Then,
 
 `docker build .`
 
-Then to run this entire thing on your local machine via Docker Compose
+Then to run this entire app with a dependency of Postgresql on your local machine via Docker Compose
 
 `docker-compose up -d`
 
