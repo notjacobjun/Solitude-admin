@@ -3,7 +3,7 @@ Hack 2021 hackathon project
 
 ## Background
 
-This project uses spring-boot postgres and firebase.
+This project uses spring-boot(2.4.2), postgres and firebase auth.
 
 It generates BookingEvents from the user so that the admin can verify and check in users while also having the ability to checkout the users. 
 
@@ -17,6 +17,22 @@ We are using the Google Calendar API for the event creation and management of th
 
 We also implemented the check in and checkout API. This checks the user's email with the email used to register for the event. 
 
-#o Firebase
+## Local build
+
+Run `mvn -f pom.xml clean package` to build the target jar file, provided that Maven is installed.
+
+Then run `java -jar target/Solitude-admin-0.0.1.jar`
+
+# Docker :whale:
+
+To build the jar file in a Maven Container:
+
+`$ docker run -it --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn package`
+
+Then,
+
+`docker build .`
+
+# Firebase
 
 This requires Firebase Admin SDK loaded and saved into a file `solitude-credentials.json` and placed in the root of the project directory. Generate a secret key from your Firebase Project settings > Service Accounts, save it as a JSON file.
