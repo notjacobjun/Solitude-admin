@@ -28,6 +28,7 @@ public class LocationController {
         return locationRepository.save(location);
     }
 
+    // TODO change the requestBody for location to DTO
     @PutMapping("/{locationId}")
     public Location updateLocation(@PathVariable Long locationId, @Valid @RequestBody Location locationRequest) {
         return locationRepository.findById(locationId).map(location -> {

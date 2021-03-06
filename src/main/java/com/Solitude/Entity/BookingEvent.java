@@ -1,38 +1,39 @@
 package com.Solitude.Entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 
 import javax.persistence.*;
 
 // TODO consider adding javax validation annotations for each field if not already done so on the frontend
 @Entity
-@Table(name = "BookingEvent")
+@Table(name = "booking_event")
 // constructor, getter, setter, toString EqualsAndHashCode
 @Data
 public class BookingEvent extends AuditModel {
-    // instantiated by Google Calendar API and saved into DB during event creation
+    // note that in google calendar the id of each calendar is the email of the user
     @Id
+    @Column(name = "attendee_email")
     private String eventId;
-    @Column(name = "eventName")
+    @Column(name = "event_name")
     private String eventName;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "locationId", nullable = false)
-    // make sure that this is the right type for this field, maybe we have to set to Long, instead of Location
+    // added these to avoid infinite recursion with Jackson
+    @JsonManagedReference
+    @JoinColumn(name = "location_id", nullable = false)
     private Location location;
     @Column(name = "description")
     private String description;
-    @Column(name = "partyNumber")
+    @Column(name = "party_number")
     private int partyNumber;
-    @Column(name = "startTime")
+    @Column(name = "start_time")
     private String startTime;
-    @Column(name = "endTime")
+    @Column(name = "end_time")
     private String endTime;
-    @Column(name = "attendeeEmail")
-    private String attendeeEmail;
-    @Column(name = "userID")
+    @Column(name = "user_Id")
     private Long userID;
-    @Column(name = "checkedIn")
+    @Column(name = "check_in")
     private boolean checkedIn;
-    @Column(name = "checkedOut")
+    @Column(name = "check_out")
     private boolean checkedOut;
 }

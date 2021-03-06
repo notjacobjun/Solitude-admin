@@ -2,8 +2,6 @@ package com.Solitude.controllers;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import com.Solitude.Calendar.GoogleCalendar;
@@ -14,7 +12,6 @@ import com.Solitude.Repository.EventRepository;
 import com.Solitude.Repository.LocationRepository;
 
 import com.google.api.services.calendar.Calendar;
-import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,7 +102,7 @@ public class EventController {
     }
 
     @PutMapping("/locations/{locationId}/events/{eventId}")
-    public BookingEvent updateBookingEvent(@PathVariable(value = "eventId") Long eventId, @PathVariable(value = "locationId") Long locationid, @Valid @RequestBody BookingEvent eventRequest) {
+    public BookingEvent updateBookingEvent(@PathVariable(value = "eventId") String eventId, @PathVariable(value = "locationId") Long locationid, @Valid @RequestBody BookingEvent eventRequest) {
         if (!eventRepository.existsById(eventId)) {
             throw new ResourceNotFoundException("EventId " + eventId + " not found");
         }
@@ -118,14 +115,13 @@ public class EventController {
             event.setPartyNumber(eventRequest.getPartyNumber());
             event.setStartTime(eventRequest.getStartTime());
             event.setEndTime(eventRequest.getEndTime());
-            event.setAttendeeEmail(eventRequest.getAttendeeEmail());
             return eventRepository.save(event);
         }).orElseThrow(() -> new ResourceNotFoundException("EventId " + eventId + " not found"));
     }
 
     @DeleteMapping("/locations/{locationId}/events/{eventId}")
     public ResponseEntity<?> deleteEvent(@PathVariable(value = "locationId") Long locationId,
-                                         @PathVariable(value = "eventId") Long eventId) {
+                                         @PathVariable(value = "eventId") String eventId) {
         Optional<Location> eventLocation = locationRepository.findById(locationId);
         return eventRepository.findByEventIdAndLocation(eventId, eventLocation).map(event -> {
             eventRepository.delete(event);

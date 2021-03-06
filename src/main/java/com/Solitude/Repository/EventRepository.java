@@ -12,10 +12,10 @@ import java.util.Optional;
 
 // exception translation enabled by this annotation
 @Repository
-public interface EventRepository extends JpaRepository<BookingEvent, Long> {
+public interface EventRepository extends JpaRepository<BookingEvent, String> {
     // configued using Spring JPA's automatic custom queries
     Page<BookingEvent> findByLocation(Optional<Location> location, Pageable pageable);
 
     // same here
-    Optional<BookingEvent> findByEventIdAndLocation(Long eventId, Optional<Location> eventLocation);
+    Optional<BookingEvent> findByEventIdAndLocation(String eventId, Optional<Location> eventLocation);
 }
