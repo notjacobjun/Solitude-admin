@@ -1,4 +1,4 @@
-package com.Solitude.util;
+package com.Solitude.Calendar;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -63,15 +63,16 @@ public class GoogleCalendar {
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
-    
+
+    // Calendars in GoogleCalendar APi are identified by the email address that created the calendar
     public static String getCalendarId() {
     	String calendarId = null;
 		try {
 	    	Calendar service = getService();
-	
+
 	        CalendarList calendars = service.calendarList().list().execute();
 	        List<CalendarListEntry> calendarItems = calendars.getItems();
-	        
+
 	        for(CalendarListEntry cal : calendarItems)  {
 	        	/* Get the calendarId for the calendar "Solitude"
 	        	 * There's probably a better way to do this

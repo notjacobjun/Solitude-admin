@@ -1,13 +1,18 @@
 package com.Solitude.controllers;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.Optional;
 
+import com.Solitude.Calendar.GoogleCalendar;
 import com.Solitude.Entity.BookingEvent;
 import com.Solitude.Entity.Location;
 import com.Solitude.Exception.ResourceNotFoundException;
 import com.Solitude.Repository.EventRepository;
 import com.Solitude.Repository.LocationRepository;
 
+import com.google.api.services.calendar.Calendar;
+import com.google.api.services.calendar.model.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +27,8 @@ import javax.validation.Valid;
 public class EventController {
 
     private static final Logger logger = LoggerFactory.getLogger(EventController.class);
-
     @Autowired
     private EventRepository eventRepository;
-
     @Autowired
     private LocationRepository locationRepository;
 
@@ -76,38 +79,49 @@ public class EventController {
         return eventRepository.findByLocation(location, pageable);
     }
 
-    // creates new event based on @RequestBody event parameters given
-//    @PostMapping("/location/{locationId}/events")
-//    public BookingEvent createBookingEvent(@PathVariable(value = "locationId") Long locationid, @Valid @RequestBody BookingEvent bookingEvent) {
-//        return locationRepository.findById(locationid).map(location -> {
-//            bookingEvent.setLocation(location);
-//            return eventRepository.save(bookingEvent);
-//        }).orElseThrow(() -> new ResourceNotFoundException("LocationId " + locationid + " not found"));
-//    }
+    // creates a new event based on the event details provided
+    @PostMapping("/location/{locationId}/events")
+    public BookingEvent createBookingEvent(@RequestBody Event event) {
+        BookingEvent bookingEvent = new BookingEvent();
+        // creates a new authorized API client
+        try {
+            Calendar service = GoogleCalendar.getService();
+            // creates the event within the Solitude admin calendar, then it adds the attendees to the event
+            // TODO confirm that primary keyword is the right choice here, instead of explicitly using the solitude admin email
+            // this line below requires that the start and end time for the event are instantiated, also that they
+            // correspondent with both being an all-day event or both as a date-time event (part of the day)
+            service.events().insert("primary", event).execute();
 
-    // updates the event baesd the @RequestBody event parameters given
+            // save the event into the postgres DB
+            // TODO configure the event fields into BookingEvent
+            bookingEvent.setEventId(event.getId());
+        } catch (IOException | GeneralSecurityException e) {
+            e.printStackTrace();
+        }
+        return eventRepository.save(bookingEvent);
+    }
+
     @PutMapping("/locations/{locationId}/events/{eventId}")
-    public BookingEvent updateBookingEvent(@PathVariable (value = "eventId") Long eventId, @PathVariable (value = "locationId") Long locationid, @Valid @RequestBody BookingEvent eventRequest) {
-        if(!eventRepository.existsById(eventId)) {
+    public BookingEvent updateBookingEvent(@PathVariable(value = "eventId") String eventId, @PathVariable(value = "locationId") Long locationid, @Valid @RequestBody BookingEvent eventRequest) {
+        if (!eventRepository.existsById(eventId)) {
             throw new ResourceNotFoundException("EventId " + eventId + " not found");
         }
 
         return eventRepository.findById(eventId).map(event -> {
             event.setEventName(eventRequest.getEventName());
-            if(eventRequest.getDescription() != null) {
+            if (eventRequest.getDescription() != null) {
                 event.setDescription(eventRequest.getDescription());
             }
             event.setPartyNumber(eventRequest.getPartyNumber());
             event.setStartTime(eventRequest.getStartTime());
             event.setEndTime(eventRequest.getEndTime());
-            event.setAttendeeEmail(eventRequest.getAttendeeEmail());
             return eventRepository.save(event);
         }).orElseThrow(() -> new ResourceNotFoundException("EventId " + eventId + " not found"));
     }
 
     @DeleteMapping("/locations/{locationId}/events/{eventId}")
     public ResponseEntity<?> deleteEvent(@PathVariable(value = "locationId") Long locationId,
-                                         @PathVariable(value = "eventId") Long eventId) {
+                                         @PathVariable(value = "eventId") String eventId) {
         Optional<Location> eventLocation = locationRepository.findById(locationId);
         return eventRepository.findByEventIdAndLocation(eventId, eventLocation).map(event -> {
             eventRepository.delete(event);

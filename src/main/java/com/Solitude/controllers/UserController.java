@@ -18,9 +18,7 @@ public class UserController {
     @Autowired
     UserServiceImplementation userService;
 
-    // user will give the ID for the event and provide their ID
     // later on add another option on top of this option to make the process faster
-    // for users
     @PostMapping("/checkin")
     public ResponseBody checkIn(@RequestBody UserCheckInOut user, @RequestBody BookingEvent event) {
         userService.checkIn(user, event);
