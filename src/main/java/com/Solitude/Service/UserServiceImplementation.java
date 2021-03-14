@@ -4,14 +4,14 @@ import com.Solitude.Entity.BookingEvent;
 import com.Solitude.RESTHelper.UserCheckInOut;
 import com.Solitude.Repository.EventRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@AllArgsConstructor
 public class UserServiceImplementation implements UserService {
 
-	@Autowired
-	EventRepository eventRepository;
+    private final EventRepository eventRepository;
 
     @Override
     public void checkIn(UserCheckInOut user, BookingEvent event) {

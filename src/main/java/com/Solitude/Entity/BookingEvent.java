@@ -1,7 +1,9 @@
 package com.Solitude.Entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
@@ -10,6 +12,8 @@ import javax.persistence.*;
 @Table(name = "booking_event")
 // constructor, getter, setter, toString EqualsAndHashCode
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class BookingEvent extends AuditModel {
     // note that in google calendar the id of each calendar is the email of the user
     @Id

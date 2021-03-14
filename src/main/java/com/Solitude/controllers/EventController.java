@@ -13,6 +13,7 @@ import com.Solitude.Repository.LocationRepository;
 
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,15 +25,14 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @RestController
+// using constructor injection for unit testing compatibility
+@RequiredArgsConstructor
 public class EventController {
 
-    private static final Logger logger = LoggerFactory.getLogger(EventController.class);
-    @Autowired
-    private EventRepository eventRepository;
-    @Autowired
-    private LocationRepository locationRepository;
+    private final EventRepository eventRepository;
+    private final LocationRepository locationRepository;
 
-//    // TODO: Add firebase authentication
+    // TODO: Add firebase authentication
 //    @RequestMapping(value = "/upcoming/{location}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 //    public ResponseEntity<List<Event>> getUpcomingEvents(@PathVariable("location") String location,
 //                                                         @RequestParam(name = "size") Integer size) {
@@ -74,27 +74,29 @@ public class EventController {
 //    }
 
     @GetMapping("/location/{locationId}/events")
-    public Page<BookingEvent> getAllEventsByLocationId(@PathVariable(value = "locationId") Long locationId, Pageable pageable) {
+    public Page<BookingEvent> getEventByLocationId(@PathVariable(value = "locationId") Long locationId, Pageable pageable) {
         Optional<Location> location = locationRepository.findById(locationId);
         return eventRepository.findByLocation(location, pageable);
     }
 
-    // creates a new event based on the event details provided
-    @PostMapping("/location/{locationId}/events")
-    public BookingEvent createBookingEvent(@RequestBody Event event) {
-        BookingEvent bookingEvent = new BookingEvent();
+    // TODO test post mapping with solitude admin email
+    // specify the calendar that you want to add this event into with the email
+    // also have to specify the userId
+    @PostMapping("/location/{locationId}/{email}/{userId}/events")
+    public BookingEvent addBookingEvent(@PathVariable String email, @PathVariable Long userId, @RequestBody Event event) {
+        // save the event into the postgres DB
+        BookingEvent bookingEvent = new BookingEvent(event.getId(), event.getSummary(), null, event.getDescription(),
+                event.getAttendees().size(), event.getStart().toString(), event.getEnd().toString(), userId,
+                false, false);
         // creates a new authorized API client
         try {
             Calendar service = GoogleCalendar.getService();
             // creates the event within the Solitude admin calendar, then it adds the attendees to the event
-            // TODO confirm that primary keyword is the right choice here, instead of explicitly using the solitude admin email
             // this line below requires that the start and end time for the event are instantiated, also that they
             // correspondent with both being an all-day event or both as a date-time event (part of the day)
-            service.events().insert("primary", event).execute();
+            service.events().insert(email, event).execute();
 
-            // save the event into the postgres DB
-            // TODO configure the event fields into BookingEvent
-            bookingEvent.setEventId(event.getId());
+
         } catch (IOException | GeneralSecurityException e) {
             e.printStackTrace();
         }

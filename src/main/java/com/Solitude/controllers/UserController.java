@@ -4,19 +4,15 @@ import com.Solitude.Entity.BookingEvent;
 import com.Solitude.RESTHelper.UserCheckInOut;
 import com.Solitude.Service.UserServiceImplementation;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/user")
 public class UserController {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
-
-    @Autowired
-    UserServiceImplementation userService;
+    private final UserServiceImplementation userService;
 
     // later on add another option on top of this option to make the process faster
     @PostMapping("/checkin")
