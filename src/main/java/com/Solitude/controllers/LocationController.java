@@ -3,6 +3,7 @@ package com.Solitude.controllers;
 import com.Solitude.Entity.Location;
 import com.Solitude.Exception.ResourceNotFoundException;
 import com.Solitude.Repository.LocationRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,10 +14,10 @@ import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/locations")
+@AllArgsConstructor
 public class LocationController {
 
-    @Autowired
-    private LocationRepository locationRepository;
+    private final LocationRepository locationRepository;
 
     @GetMapping("/")
     public Page<Location> getAllLocations(Pageable pageable) {
