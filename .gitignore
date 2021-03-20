@@ -3,6 +3,8 @@ HELP.md
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+**/target/**
+
 # Compiled class file
 *.class
 
