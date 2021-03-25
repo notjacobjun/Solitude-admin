@@ -4,11 +4,11 @@ import com.Solitude.Entity.BookingEvent;
 import com.Solitude.RESTHelper.UserCheckInOut;
 import com.Solitude.Service.UserServiceImplementation;
 
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequiredArgsConstructor
+@AllArgsConstructor
 @RequestMapping("/user")
 public class UserController {
 

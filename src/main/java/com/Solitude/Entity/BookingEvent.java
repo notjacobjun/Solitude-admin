@@ -1,6 +1,7 @@
 package com.Solitude.Entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.google.type.Date;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,17 +18,22 @@ import javax.persistence.*;
 public class BookingEvent extends AuditModel {
     // note that in google calendar the id of each calendar is the email of the user
     @Id
-    @Column(name = "attendee_email")
+    @Column(name = "event_id")
     private String eventId;
     @Column(name = "event_name")
     private String eventName;
     @ManyToOne(fetch = FetchType.LAZY)
     // added these to avoid infinite recursion with Jackson
-    @JsonManagedReference
+//    @JsonManagedReference
+    // make sure that this nullable value works when testing
     @JoinColumn(name = "location_id", nullable = false)
+    // this is to avoid error with serializing a lazily fetched field
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Location location;
     @Column(name = "description")
     private String description;
+    @Column(name = "creator_email")
+    private String creatorEmail;
     @Column(name = "party_number")
     private int partyNumber;
     @Column(name = "start_time")
