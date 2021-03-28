@@ -1,4 +1,4 @@
-package com.Solitude.controllers;
+package com.Solitude.Controllers;
 
 import com.Solitude.Entity.Location;
 import com.Solitude.Exception.ResourceNotFoundException;

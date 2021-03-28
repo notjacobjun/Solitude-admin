@@ -3,9 +3,8 @@ package com.Solitude.Controllers;
 import com.Solitude.Entity.BookingEvent;
 import com.Solitude.Repository.EventRepository;
 import com.Solitude.Repository.LocationRepository;
-import com.Solitude.controllers.EventController;
+import com.Solitude.Service.EventServiceImplementation;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
@@ -13,10 +12,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +27,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.awt.print.Book;
 import java.io.IOException;
 import java.util.Random;
 
@@ -55,10 +51,12 @@ class EventControllerUnitTests {
     private EventRepository eventRepository;
     @Mock
     private LocationRepository locationRepository;
+    @Mock
+    private EventServiceImplementation eventServiceImplementation;
 
     @BeforeEach
     void initTestCase() {
-        eventController = new EventController(eventRepository, locationRepository, new ModelMapper());
+        eventController = new EventController(eventRepository, locationRepository, eventServiceImplementation);
     }
 
     @LocalServerPort

@@ -26,6 +26,7 @@ public class GoogleCalendarEventCombinedSerializer {
             jsonGenerator.writeStringField("id", event.getId());
             jsonGenerator.writeStringField("summary", event.getSummary());
             jsonGenerator.writeStringField("description", event.getDescription());
+//            jsonGenerator.writeStringField("location", event.getLocation());
             // check if this is valid for writing into the json object 'creator'
             jsonGenerator.writeStringField("creator.email", event.getCreator().getEmail());
             jsonGenerator.writeNumberField("attendees[].additionalGuests", event.getAttendees().size());

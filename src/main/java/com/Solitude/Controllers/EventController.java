@@ -1,9 +1,8 @@
-package com.Solitude.controllers;
+package com.Solitude.Controllers;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import com.Solitude.Calendar.GoogleCalendar;
@@ -11,26 +10,28 @@ import com.Solitude.Entity.BookingEvent;
 import com.Solitude.Entity.Location;
 import com.Solitude.Exception.ResourceNotFoundException;
 import com.Solitude.RESTHelper.BookingEventDTO;
+import com.Solitude.RESTHelper.GoogleCalendarEventCombinedSerializer;
 import com.Solitude.Repository.EventRepository;
 import com.Solitude.Repository.LocationRepository;
 
+import com.Solitude.Service.EventServiceImplementation;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.expression.ParseException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-// using constructor injection for unit testing compatibility
 @RequiredArgsConstructor
 public class EventController {
 
+    //    private Logger logger = Logger.getLogger(EventController.class.getName());
     private final EventRepository eventRepository;
     private final LocationRepository locationRepository;
-    private final ModelMapper modelMapper;
+    private final EventServiceImplementation eventServiceImplementation;
 
     // TODO: Add firebase authentication
 //    @RequestMapping(value = "/upcoming/{location}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -86,39 +87,44 @@ public class EventController {
 
     @GetMapping(value = "/event")
     public List<BookingEvent> getAllEvents() {
+//        BookingEvent event1 = new BookingEvent();
+//        System.out.println(event1);
+//        BookingEvent event = new BookingEvent("testEvent", "testEventname", null, "testDescription", "tester@gmail.com", 5, "startingTime", "endingTime", 123L, false, false);
         return eventRepository.findAll();
     }
 
-    // API call to create a Google Calendar event based on the JSON parameters within event given
+    // saves BookingEvent JSON data into postgres DB
     @PostMapping("/event")
-    public void createGoogleCalendarEvent(@RequestBody Event event) {
-        // creates a new authorized API client
-        try {
-            Calendar service = GoogleCalendar.getService();
-            service.events().insert(event.getCreator().getEmail(), event).execute();
-
-        } catch (IOException | GeneralSecurityException e) {
-            e.printStackTrace();
-        }
+    public void saveEventIntoPostgres(@RequestBody BookingEventDTO event) throws ParseException {
+        BookingEvent newEvent = eventServiceImplementation.convertToEntity(event);
+        eventRepository.save(newEvent);
+//        Event GCEvent = eventServiceImplementation.convertToGCEvent(newEvent);
+//        // TODO update the GCEvent with email, attendees, start, and end time.
+//        try {
+//            Calendar service = GoogleCalendar.getService();
+//            service.events().insert(event.getCreatorEmail(), GCEvent).execute();
+//        } catch (IOException | GeneralSecurityException e) {
+//            e.printStackTrace();
+//        }
     }
 
-    // TODO test post mapping with solitude admin email and a proper Google calendar event created (now just getting HTTP status 400)
-    // specify the calendar that you want to add this event into with the email
-    // also have to specify the userId
-    @PostMapping("/event/{userId}")
-//    @JsonSerialize(using = GoogleCalendarEventCombinedSerializer.EventJsonSerializer.class)
-    public BookingEvent saveEventIntoPostgres(@PathVariable Long userId, @RequestBody Event event) {
-        Objects.requireNonNull(event, "event and its fields must not be null");
-//        Gson gson = new Gson();
-//        String eventJson = gson.toJson(event);
-//        Event calendarEvent = gson.fromJson(eventJson, Event.class);
-        BookingEvent bookingEvent = new BookingEvent(event.getId(), event.getSummary(), null,
-                event.getDescription(), event.getCreator().getEmail(), event.getAttendees().size(),
-                event.getStart().getDate().toString(), event.getEnd().getDate().toString(), userId,
-                false, false);
-
-        return eventRepository.save(bookingEvent);
-    }
+    // buggy post mapping
+//    @PostMapping("/event/{userId}")
+////    @JsonSerialize(using = GoogleCalendarEventCombinedSerializer.EventJsonSerializer.class)
+//    public BookingEvent saveEventIntoPostgres(@PathVariable Long userId, @RequestBody Event event) {
+//        Objects.requireNonNull(event, "event and its fields must not be null");
+//        System.out.println("jacob's debug stuff: " + event);
+////        logger.debug(event);
+////        Gson gson = new Gson();
+////        String eventJson = gson.toJson(event);
+////        Event calendarEvent = gson.fromJson(eventJson, Event.class);
+//        BookingEvent bookingEvent = new BookingEvent(event.getId(), event.getSummary(), null,
+//                event.getDescription(), event.getCreator().getEmail(), event.getAttendees().size(),
+//                event.getStart().getDate().toString(), event.getEnd().getDate().toString(), userId,
+//                false, false);
+//
+//        return eventRepository.save(bookingEvent);
+//    }
 
     @PutMapping(value = "/event/{eventId}", consumes = {"application/json"})
     public BookingEvent updateBookingEvent(@PathVariable String eventId, @RequestBody BookingEventDTO newEvent) {
@@ -139,11 +145,12 @@ public class EventController {
                 })
                 .orElseGet(() -> {
                     newEvent.setEventId(eventId);
-                    BookingEvent modifiedEvent = convertToEntity(newEvent);
+                    BookingEvent modifiedEvent = eventServiceImplementation.convertToEntity(newEvent);
                     return eventRepository.save(modifiedEvent);
                 });
     }
 
+    // TODO configure to not delete location as well (not sure if it does now)
     @DeleteMapping("/location/{locationId}/event/{eventId}")
     public ResponseEntity<?> deleteEvent(@PathVariable(value = "locationId") Long locationId,
                                          @PathVariable(value = "eventId") String eventId) {
@@ -152,37 +159,5 @@ public class EventController {
             eventRepository.delete(event);
             return ResponseEntity.ok().build();
         }).orElseThrow(() -> new ResourceNotFoundException("Event not found with id " + eventId + " and locationId" + locationId));
-    }
-
-    private BookingEventDTO convertToDto(BookingEvent event) {
-        BookingEventDTO bookingEventDTO = modelMapper.map(event, BookingEventDTO.class);
-        bookingEventDTO.setEventId(event.getEventId());
-        bookingEventDTO.setEventName(event.getEventName());
-        bookingEventDTO.setDescription(event.getDescription());
-        bookingEventDTO.setCreatorEmail(event.getCreatorEmail());
-        bookingEventDTO.setStartTime(event.getStartTime());
-        bookingEventDTO.setEndTime(event.getEndTime());
-        bookingEventDTO.setLocation(event.getLocation());
-        bookingEventDTO.setPartyNumber(event.getPartyNumber());
-        bookingEventDTO.setUserID(event.getUserID());
-        bookingEventDTO.setCheckedIn(event.isCheckedIn());
-        bookingEventDTO.setCheckedOut(event.isCheckedOut());
-        return bookingEventDTO;
-    }
-
-    private BookingEvent convertToEntity(BookingEventDTO eventDTO) {
-        BookingEvent bookingEvent = modelMapper.map(eventDTO, BookingEvent.class);
-        bookingEvent.setEventId(eventDTO.getEventId());
-        bookingEvent.setEventName(eventDTO.getEventName());
-        bookingEvent.setDescription(eventDTO.getDescription());
-        bookingEvent.setCreatorEmail(eventDTO.getCreatorEmail());
-        bookingEvent.setStartTime(eventDTO.getStartTime());
-        bookingEvent.setEndTime(eventDTO.getEndTime());
-        bookingEvent.setLocation(eventDTO.getLocation());
-        bookingEvent.setPartyNumber(eventDTO.getPartyNumber());
-        bookingEvent.setUserID(eventDTO.getUserID());
-        bookingEvent.setCheckedIn(eventDTO.isCheckedIn());
-        bookingEvent.setCheckedOut(eventDTO.isCheckedOut());
-        return bookingEvent;
     }
 }
