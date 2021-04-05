@@ -4,8 +4,8 @@ import com.Solitude.Entity.Location;
 import com.Solitude.Exception.ResourceNotFoundException;
 import com.Solitude.RESTHelper.LocationDTO;
 import com.Solitude.Repository.LocationRepository;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.Solitude.Service.LocationServiceImplementation;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -14,67 +14,46 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @RestController
+@RequiredArgsConstructor
 public class LocationController {
 
     private final LocationRepository locationRepository;
-    private final ModelMapper modelMapper;
+    private final LocationServiceImplementation locationServiceImplementation;
 
-    @Autowired
-    public LocationController(LocationRepository locationRepository, ModelMapper modelMapper) {
-        this.locationRepository = locationRepository;
-        this.modelMapper = modelMapper;
-    }
-
-    @GetMapping("/locations")
+    @GetMapping("/location")
     public Page<Location> getAllLocations(Pageable pageable) {
         return locationRepository.findAll(pageable);
     }
 
-    @PostMapping("/locations")
-    public LocationDTO createLocation(@Valid @RequestBody LocationDTO locationRequest) {
-        Location location = convertToEntity(locationRequest);
-        Location locationCreated = locationRepository.save(location);
-        return convertToDto(locationCreated);
+    @PostMapping("/location")
+    public Location createLocation(@Valid @RequestBody LocationDTO locationRequest) {
+        Location location = locationServiceImplementation.convertToEntity(locationRequest);
+        return locationRepository.save(location);
     }
 
-    @PutMapping("/locations")
-    public Location updateLocation(@RequestBody LocationDTO locationRequest) throws ResourceNotFoundException {
-        try{
-            Location locationEntity = convertToEntity(locationRequest);
-            return locationRepository.save(locationEntity);
-        }
-        catch (Exception exc) {
-            exc.printStackTrace();
-        }
-        return null;
+    @PutMapping("/location/{locationId}")
+    public Location updateLocation(@PathVariable Long locationId, @RequestBody LocationDTO newLocation) throws ResourceNotFoundException {
+        return locationRepository.findById(locationId)
+                .map(location -> {
+                    location.setLocationID(locationId);
+                    location.setLocationName(newLocation.getLocationName());
+                    location.setMaxCapacity(newLocation.getMaxCapacity());
+                    location.setEvents(newLocation.getEvents());
+                    location.setCurrentNumberOfAttendees(newLocation.getCurrentNumberOfAttendees());
+                    return locationRepository.save(location);
+                })
+                .orElseGet(() -> {
+                    newLocation.setLocationID(locationId);
+                    Location modifiedLocation = locationServiceImplementation.convertToEntity(newLocation);
+                    return locationRepository.save(modifiedLocation);
+                });
     }
 
-    @DeleteMapping("/locations/{locationId}")
+    @DeleteMapping("/location/{locationId}")
     public ResponseEntity<?> deleteLocation(@PathVariable Long locationId) {
         return locationRepository.findById(locationId).map(location -> {
             locationRepository.delete(location);
             return ResponseEntity.ok().build();
         }).orElseThrow(() -> new ResourceNotFoundException("LocationId " + locationId + " not found"));
-    }
-
-    private LocationDTO convertToDto(Location location) {
-        LocationDTO locationDTO = modelMapper.map(location, LocationDTO.class);
-        locationDTO.setLocationID(location.getLocationID());
-        locationDTO.setLocationName(location.getLocationName());
-        locationDTO.setCurrentNumberOfAttendees(location.getCurrentNumberOfAttendees());
-        locationDTO.setEvents(location.getEvents());
-        locationDTO.setMaxCapacity(location.getMaxCapacity());
-        return locationDTO;
-    }
-
-    private Location convertToEntity(LocationDTO locationDTO) {
-        Location location = modelMapper.map(locationDTO, Location.class);
-        location.setLocationID(locationDTO.getLocationID());
-        location.setLocationName(locationDTO.getLocationName());
-        location.setCurrentNumberOfAttendees(locationDTO.getCurrentNumberOfAttendees());
-        location.setEvents(locationDTO.getEvents());
-        location.setMaxCapacity(locationDTO.getMaxCapacity());
-
-        return location;
     }
 }

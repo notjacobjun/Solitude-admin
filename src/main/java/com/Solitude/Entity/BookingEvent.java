@@ -23,11 +23,11 @@ public class BookingEvent extends AuditModel {
     private String eventName;
     @ManyToOne(fetch = FetchType.LAZY)
     // added these to avoid infinite recursion with Jackson
-//    @JsonManagedReference
+    // @JsonManagedReference
     // make sure that this nullable value works when testing
     @JoinColumn(name = "location_id", nullable = false)
     // this is to avoid error with serializing a lazily fetched field
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private Location location;
     @Column(name = "description")
     private String description;
@@ -134,5 +134,11 @@ public class BookingEvent extends AuditModel {
         this.checkedOut = checkedOut;
     }
 
-
+//    public List<User> getAttendees() {
+//        return attendees;
+//    }
+//
+//    public void setAttendees(List<User> attendees) {
+//        this.attendees = attendees;
+//    }
 }

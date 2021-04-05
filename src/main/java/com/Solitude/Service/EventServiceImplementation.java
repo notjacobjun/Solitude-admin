@@ -2,10 +2,17 @@ package com.Solitude.Service;
 
 import com.Solitude.Entity.BookingEvent;
 import com.Solitude.RESTHelper.BookingEventDTO;
+import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.EventAttendee;
+import com.google.api.services.calendar.model.EventDateTime;
+import com.google.type.Date;
 import lombok.NoArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.List;
 
 @Service
 @NoArgsConstructor
@@ -46,11 +53,60 @@ public class EventServiceImplementation implements EventService {
     }
 
     public Event convertToGCEvent(BookingEvent event) {
-        return new Event()
+          return new Event()
                 .setId(event.getEventId())
                 .setSummary(event.getEventName())
                 .setDescription(event.getDescription());
     }
 
-    // TODO create update fields for more detailed contruction of the GC event
+    public Event updateFields(Event event, String creatorEmail, int partyNumber, String eventStartTime, String eventEndTime) {
+        Event.Creator creator = new Event.Creator();
+        creator.setEmail(creatorEmail);
+        EventAttendee attendees = new EventAttendee();
+        attendees.setEmail(creator.getEmail());
+        // party number includes the creator so we have to subtract 1 from the count
+        attendees.setAdditionalGuests(partyNumber-1);
+        DateTime startTime;
+        DateTime endTime;
+//        Date startDate;
+//        Date endDate;
+        EventDateTime start = new EventDateTime();
+        EventDateTime end = new EventDateTime();
+        String timeZone = "America/Los_Angeles";
+        try {
+            startTime = DateTime.parseRfc3339(eventStartTime);
+            endTime = DateTime.parseRfc3339(eventEndTime);
+            start = new EventDateTime()
+                    .setDateTime(startTime)
+                    .setTimeZone(timeZone);
+            end = new EventDateTime()
+                    .setDateTime(endTime)
+                    .setTimeZone(timeZone);
+        }
+        catch(NumberFormatException e) {
+            try {
+//                byte[] startData = eventStartTime.getBytes();
+//                byte[] endData = eventEndTime.getBytes();
+                startTime = DateTime.parseRfc3339(eventStartTime);
+                endTime = DateTime.parseRfc3339(eventEndTime);
+//                startDate = Date.parseFrom(startData);
+//                endDate = Date.parseFrom(endData);
+                start = new EventDateTime()
+                        .setDate(startTime)
+                        .setTimeZone(timeZone);
+                end = new EventDateTime()
+                        .setDate(endTime)
+                        .setTimeZone(timeZone);
+            }
+            catch (NumberFormatException exception) {
+                System.out.println("Wrong date format for updating/initializing Google calendar event fields");
+                exception.printStackTrace();
+            }
+        }
+        event.setCreator(creator);
+        event.setAttendees(Collections.singletonList(attendees));
+        event.setStart(start);
+        event.setEnd(end);
+        return event;
+    }
 }

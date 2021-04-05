@@ -1,6 +1,8 @@
 package com.Solitude.Controllers;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Optional;
@@ -15,8 +17,11 @@ import com.Solitude.Repository.EventRepository;
 import com.Solitude.Repository.LocationRepository;
 
 import com.Solitude.Service.EventServiceImplementation;
+import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.EventAttendee;
+import com.google.api.services.calendar.model.EventDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -87,25 +92,24 @@ public class EventController {
 
     @GetMapping(value = "/event")
     public List<BookingEvent> getAllEvents() {
-//        BookingEvent event1 = new BookingEvent();
-//        System.out.println(event1);
-//        BookingEvent event = new BookingEvent("testEvent", "testEventname", null, "testDescription", "tester@gmail.com", 5, "startingTime", "endingTime", 123L, false, false);
         return eventRepository.findAll();
     }
 
     // saves BookingEvent JSON data into postgres DB
     @PostMapping("/event")
     public void saveEventIntoPostgres(@RequestBody BookingEventDTO event) throws ParseException {
+        // save the event into postgres DB
         BookingEvent newEvent = eventServiceImplementation.convertToEntity(event);
         eventRepository.save(newEvent);
-//        Event GCEvent = eventServiceImplementation.convertToGCEvent(newEvent);
-//        // TODO update the GCEvent with email, attendees, start, and end time.
-//        try {
-//            Calendar service = GoogleCalendar.getService();
-//            service.events().insert(event.getCreatorEmail(), GCEvent).execute();
-//        } catch (IOException | GeneralSecurityException e) {
-//            e.printStackTrace();
-//        }
+        // then convert to Google Calendar event form
+        Event GCEvent = eventServiceImplementation.convertToGCEvent(newEvent);
+        eventServiceImplementation.updateFields(GCEvent, event.getCreatorEmail(), event.getPartyNumber(), event.getStartTime(), event.getEndTime());
+        try {
+            Calendar service = GoogleCalendar.getService();
+            service.events().insert(event.getCreatorEmail(), GCEvent).execute();
+        } catch (IOException | GeneralSecurityException e) {
+            e.printStackTrace();
+        }
     }
 
     // buggy post mapping

@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class UserCheckInOut {
 	private Long userID;
+	private String email;
 
 	public Long getUserID() {
 		return userID;
@@ -21,6 +22,4 @@ public class UserCheckInOut {
 	public void setEmail(String email) {
 		this.email = email;
 	}
-
-	private String email;
 }
