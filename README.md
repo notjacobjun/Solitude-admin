@@ -5,7 +5,7 @@ Hack 2021 hackathon project
 
 This project uses spring-boot(2.4.2), postgres and firebase auth.
 
-It generates BookingEvents from the user so that the admin can verify and check in users while also having the ability to checkout the users. 
+It generates BookingEvents from the appUser so that the admin can verify and check in users while also having the ability to checkout the users. 
 
 The admin can also register a Location to the app and set the maximum number of attendees.
 
@@ -15,7 +15,7 @@ The admin also has the ability to manage each location and view the current stat
 
 We are using the Google Calendar API for the event creation and management of these events. 
 
-We also implemented the check in and checkout API. This checks the user's email with the email used to register for the event. 
+We also implemented the check in and checkout API. This checks the appUser's email with the email used to register for the event. 
 
 ## Local build
 

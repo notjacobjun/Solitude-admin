@@ -26,7 +26,7 @@ public class LocationController {
     }
 
     @PostMapping("/location")
-    public Location createLocation(@Valid @RequestBody LocationDTO locationRequest) {
+    public Location createLocation(@RequestBody LocationDTO locationRequest) {
         Location location = locationServiceImplementation.convertToEntity(locationRequest);
         return locationRepository.save(location);
     }
