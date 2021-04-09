@@ -1,10 +1,10 @@
 package com.Solitude.Controllers;
 
 import com.Solitude.Entity.AppUser;
+import com.Solitude.Entity.BookingEvent;
 import com.Solitude.Exception.ResourceNotFoundException;
-import com.Solitude.RESTHelper.BookingEventDTO;
 import com.Solitude.RESTHelper.UserDTO;
-import com.Solitude.RESTHelper.UserCheckInOut;
+import com.Solitude.Repository.EventRepository;
 import com.Solitude.Repository.UserRepository;
 import com.Solitude.Service.UserServiceImplementation;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -23,27 +23,47 @@ public class UserController {
 
     private final UserServiceImplementation userServiceImplementation;
     private final UserRepository userRepository;
+    private final EventRepository eventRepository;
 
     // later on add another option on top of this option to make the process faster
     @PostMapping("/checkin")
-    public boolean checkIn(@RequestBody ObjectNode objectNode) {
-        String userEmail = objectNode.get("userEmail").asText();
-        String eventCreatorEmail = objectNode.get("creatorEmail").asText();
-        // TODO set checkedIn to true for the event
-        return userEmail.equals(eventCreatorEmail);
+    public boolean checkIn(@RequestBody ObjectNode objectNode) throws NullPointerException {
+        try {
+            String userEmail = objectNode.get("email").asText();
+            String eventCreatorEmail = objectNode.get("creatorEmail").asText();
+            String eventId = objectNode.get("eventId").asText();
+            BookingEvent event = eventRepository.findByEventId(eventId);
+            event.setCheckedIn(true);
+            eventRepository.save(event);
+            return userEmail.equals(eventCreatorEmail);
+        }
+        catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     @PostMapping("/checkout")
-    public boolean checkOut(@RequestBody ObjectNode objectNode) {
-        if(objectNode.get("checkedIn").asBoolean()) {
-            String userEmail = objectNode.get("userEmail").asText();
-            String eventCreatorEmail = objectNode.get("creatorEmail").asText();
-            return userEmail.equals(eventCreatorEmail);
-        } else {
-            // TODO replace this with Logger
-            System.out.println("The user never checked in");
-            return false;
+    public boolean checkOut(@RequestBody ObjectNode objectNode) throws NullPointerException {
+        try {
+            if(objectNode.get("checkedIn").asBoolean()) {
+                String userEmail = objectNode.get("email").asText();
+                String eventCreatorEmail = objectNode.get("creatorEmail").asText();
+                String eventId = objectNode.get("eventId").asText();
+                BookingEvent event = eventRepository.findByEventId(eventId);
+                event.setCheckedOut(true);
+                eventRepository.save(event);
+                return userEmail.equals(eventCreatorEmail);
+            } else {
+                // TODO replace this with Logger
+                System.out.println("The user never checked in");
+                return false;
+            }
         }
+        catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     @GetMapping()

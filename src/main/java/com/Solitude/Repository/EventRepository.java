@@ -19,4 +19,6 @@ public interface EventRepository extends JpaRepository<BookingEvent, String> {
     Optional<BookingEvent> findByEventIdAndLocation(String eventId, Optional<Location> eventLocation);
 
     Page<BookingEvent> findByEventId(String eventId, Pageable pageable);
+
+    BookingEvent findByEventId(String eventId);
 }
