@@ -1,5 +1,7 @@
 package com.Solitude.Controllers;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +19,7 @@ import com.google.api.services.calendar.model.Event;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.expression.ParseException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -88,18 +91,17 @@ public class EventController {
 
     // saves BookingEvent JSON data into postgres DB
     @PostMapping("/event")
-    public void saveEventIntoPostgres(@RequestBody BookingEventDTO event) {
+    public void saveEventIntoPostgres(@RequestBody BookingEventDTO event) throws ParseException {
+        // save the event into postgres DB
         BookingEvent newEvent = eventServiceImplementation.convertToEntity(event);
         eventRepository.save(newEvent);
-
+        // then convert to Google Calendar event form
+        Event GCEvent = eventServiceImplementation.convertToGCEvent(newEvent);
+        eventServiceImplementation.updateFields(GCEvent, event.getCreatorEmail(), event.getPartyNumber(), event.getStartTime(), event.getEndTime());
         try {
-            Event googleCalendarEvent = eventServiceImplementation.convertToGCEvent(newEvent);
             Calendar service = GoogleCalendar.getService();
-            String calendarId = event.getCreatorEmail();
-            googleCalendarEvent = service.events().insert(calendarId, googleCalendarEvent).execute();
-            System.out.printf("Event created: %s\n", googleCalendarEvent.getHtmlLink());
-        }
-        catch (Exception e) {
+            service.events().insert(event.getCreatorEmail(), GCEvent).execute();
+        } catch (IOException | GeneralSecurityException e) {
             e.printStackTrace();
         }
     }
@@ -128,7 +130,7 @@ public class EventController {
                 });
     }
 
-    // note that this doesn't delete the location it just delete the event
+    // TODO configure to not delete location as well (not sure if it does now)
     @DeleteMapping("/location/{locationId}/event/{eventId}")
     public ResponseEntity<?> deleteEvent(@PathVariable(value = "locationId") Long locationId,
                                          @PathVariable(value = "eventId") String eventId) {

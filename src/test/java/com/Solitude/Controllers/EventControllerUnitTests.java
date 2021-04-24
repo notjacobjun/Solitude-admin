@@ -25,7 +25,6 @@
 //import org.springframework.boot.test.context.SpringBootTest;
 //import org.springframework.boot.test.web.client.TestRestTemplate;
 //import org.springframework.boot.web.server.LocalServerPort;
-//import org.springframework.test.web.reactive.server.WebTestClient;
 //import org.springframework.test.web.servlet.MockMvc;
 //
 //import java.io.IOException;
@@ -33,6 +32,7 @@
 //
 //import static org.hamcrest.Matchers.*;
 //import static org.junit.jupiter.api.Assertions.*;
+//import static org.assertj.core.api.Assertions.assertThat;
 //import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 //import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 //import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -65,6 +65,9 @@
 //    // spring boot provides the TestREST template, we just need to autowire it
 //    @Autowired
 //    private TestRestTemplate restTemplate;
+//
+//    @Autowired
+//    private MockMvc mockMvc;
 //
 //    //    @Before
 ////    public void setUp() throws Exception {
@@ -126,6 +129,32 @@
 //
 //        assertNotEquals("location", testEventAsString);
 //        System.out.println(testEventAsString);
+//    }
+//
+//    @Test
+//    void getEventByIdMapping_whenGivenTestObject_ExpectsTestEmailInfoMatch() throws Exception {
+//        int existingTestEventId = 123;
+//        this.mockMvc.perform(get(System.getenv("DB_URL") + System.getenv("DB_PORT") + "/location/" + existingTestEventId + "/events/"))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.creatorEmail", Matchers.is("test@gmail.com")))
+//                .andExpect(jsonPath("$.locationID", Matchers.is(123)));
+//    }
+//
+//    @Test
+//    void addBookingEventPostMapping_WhenGivenTestEvent_ExpectsCreatorEmailMatch() throws Exception {
+//        int RandomTestUserId = 432;
+//        // checking two unique JSON key value pairs
+//        this.mockMvc.perform(post(System.getenv("DB_URL") + System.getenv("DB_PORT") + "location/" + RandomTestUserId + "/events")).andExpect(status().isOk()).andExpect(jsonPath(".id", is("uniqueTestId")))
+//                .andExpect(jsonPath("$.start.dateTime", is("1985-04-12T23:20:50.52Z")));
+//    }
+//
+//    @Test
+//    void mockEventController_httpStatus_ExpectStatus200() throws Exception {
+//        mockMvc.perform(get("/location/123/events/")).andDo(print()).andExpect(status().isOk());
+//    }
+//
+//    @Test
+//    void addBookingEvent() {
 //    }
 //
 //    @Test
