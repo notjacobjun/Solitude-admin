@@ -130,7 +130,6 @@ public class EventController {
                 });
     }
 
-    // TODO configure to not delete location as well (not sure if it does now)
     @DeleteMapping("/location/{locationId}/event/{eventId}")
     public ResponseEntity<?> deleteEvent(@PathVariable(value = "locationId") Long locationId,
                                          @PathVariable(value = "eventId") String eventId) {
