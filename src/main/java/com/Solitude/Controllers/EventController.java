@@ -97,7 +97,7 @@ public class EventController {
         eventRepository.save(newEvent);
         // then convert to Google Calendar event form
         Event GCEvent = eventServiceImplementation.convertToGCEvent(newEvent);
-        eventServiceImplementation.updateFields(GCEvent, event.getCreatorEmail(), event.getPartyNumber(), event.getStartTime(), event.getEndTime());
+        eventServiceImplementation.updateFields(GCEvent, event.getStartTime(), event.getEndTime());
         try {
             Calendar service = GoogleCalendar.getService();
             service.events().insert(event.getCreatorEmail(), GCEvent).execute();
