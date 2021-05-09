@@ -97,8 +97,10 @@ public class EventController {
         eventRepository.save(newEvent);
         // then convert to Google Calendar event form
         Event GCEvent = eventServiceImplementation.convertToGCEvent(newEvent);
+        System.out.println(GCEvent.getDescription() + " " + GCEvent.getSummary() + " " + GCEvent.getId());
         eventServiceImplementation.updateFields(GCEvent, event.getStartTime(), event.getEndTime());
         try {
+            // enter the event into the user's Google Calendar
             Calendar service = GoogleCalendar.getService();
             service.events().insert(event.getCreatorEmail(), GCEvent).execute();
         } catch (IOException | GeneralSecurityException e) {
