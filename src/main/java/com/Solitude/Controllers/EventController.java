@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+// note that with Spring 4.3, constructor injection is implied here because there is only one contructor
 @RequiredArgsConstructor
 public class EventController {
 
@@ -94,17 +95,23 @@ public class EventController {
     public void saveEventIntoPostgres(@RequestBody BookingEventDTO event) throws ParseException {
         // save the event into postgres DB
         BookingEvent newEvent = eventServiceImplementation.convertToEntity(event);
-        eventRepository.save(newEvent);
-        // then convert to Google Calendar event form
-        Event GCEvent = eventServiceImplementation.convertToGCEvent(newEvent);
-        System.out.println(GCEvent.getDescription() + " " + GCEvent.getSummary() + " " + GCEvent.getId());
-        eventServiceImplementation.updateFields(GCEvent, event.getStartTime(), event.getEndTime());
-        try {
-            // enter the event into the user's Google Calendar
-            Calendar service = GoogleCalendar.getService();
-            service.events().insert(event.getCreatorEmail(), GCEvent).execute();
-        } catch (IOException | GeneralSecurityException e) {
-            e.printStackTrace();
+        int newCurrentNumberOfAttendents = newEvent.getPartyNumber() + newEvent.getLocation().getCurrentNumberOfAttendees();
+        if (newCurrentNumberOfAttendents <= newEvent.getLocation().getMaxCapacity()) {
+            eventRepository.save(newEvent);
+            // then convert to Google Calendar event form
+            Event GCEvent = eventServiceImplementation.convertToGCEvent(newEvent);
+            System.out.println(GCEvent.getDescription() + " " + GCEvent.getSummary() + " " + GCEvent.getId());
+            eventServiceImplementation.updateFields(GCEvent, event.getStartTime(), event.getEndTime());
+            try {
+                // enter the event into the user's Google Calendar
+                Calendar service = GoogleCalendar.getService();
+                service.events().insert(event.getCreatorEmail(), GCEvent).execute();
+            } catch (IOException | GeneralSecurityException e) {
+                e.printStackTrace();
+            }
+        }
+        else {
+            System.out.println("Too many attendents for specified location");
         }
     }
 
