@@ -1,8 +1,6 @@
 package com.Solitude.Controllers;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Optional;
@@ -12,16 +10,12 @@ import com.Solitude.Entity.BookingEvent;
 import com.Solitude.Entity.Location;
 import com.Solitude.Exception.ResourceNotFoundException;
 import com.Solitude.RESTHelper.BookingEventDTO;
-import com.Solitude.RESTHelper.GoogleCalendarEventCombinedSerializer;
 import com.Solitude.Repository.EventRepository;
 import com.Solitude.Repository.LocationRepository;
 
 import com.Solitude.Service.EventServiceImplementation;
-import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
-import com.google.api.services.calendar.model.EventAttendee;
-import com.google.api.services.calendar.model.EventDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+// note that with Spring 4.3, constructor injection is implied here because there is only one contructor
 @RequiredArgsConstructor
 public class EventController {
 
@@ -100,35 +95,25 @@ public class EventController {
     public void saveEventIntoPostgres(@RequestBody BookingEventDTO event) throws ParseException {
         // save the event into postgres DB
         BookingEvent newEvent = eventServiceImplementation.convertToEntity(event);
-        eventRepository.save(newEvent);
-        // then convert to Google Calendar event form
-        Event GCEvent = eventServiceImplementation.convertToGCEvent(newEvent);
-        eventServiceImplementation.updateFields(GCEvent, event.getCreatorEmail(), event.getPartyNumber(), event.getStartTime(), event.getEndTime());
-        try {
-            Calendar service = GoogleCalendar.getService();
-            service.events().insert(event.getCreatorEmail(), GCEvent).execute();
-        } catch (IOException | GeneralSecurityException e) {
-            e.printStackTrace();
+        int newCurrentNumberOfAttendents = newEvent.getPartyNumber() + newEvent.getLocation().getCurrentNumberOfAttendees();
+        if (newCurrentNumberOfAttendents <= newEvent.getLocation().getMaxCapacity()) {
+            eventRepository.save(newEvent);
+            // then convert to Google Calendar event form
+            Event GCEvent = eventServiceImplementation.convertToGCEvent(newEvent);
+            System.out.println(GCEvent.getDescription() + " " + GCEvent.getSummary() + " " + GCEvent.getId());
+            eventServiceImplementation.updateFields(GCEvent, event.getStartTime(), event.getEndTime());
+            try {
+                // enter the event into the user's Google Calendar
+                Calendar service = GoogleCalendar.getService();
+                service.events().insert(event.getCreatorEmail(), GCEvent).execute();
+            } catch (IOException | GeneralSecurityException e) {
+                e.printStackTrace();
+            }
+        }
+        else {
+            System.out.println("Too many attendents for specified location");
         }
     }
-
-    // buggy post mapping
-//    @PostMapping("/event/{userId}")
-////    @JsonSerialize(using = GoogleCalendarEventCombinedSerializer.EventJsonSerializer.class)
-//    public BookingEvent saveEventIntoPostgres(@PathVariable Long userId, @RequestBody Event event) {
-//        Objects.requireNonNull(event, "event and its fields must not be null");
-//        System.out.println("jacob's debug stuff: " + event);
-////        logger.debug(event);
-////        Gson gson = new Gson();
-////        String eventJson = gson.toJson(event);
-////        Event calendarEvent = gson.fromJson(eventJson, Event.class);
-//        BookingEvent bookingEvent = new BookingEvent(event.getId(), event.getSummary(), null,
-//                event.getDescription(), event.getCreator().getEmail(), event.getAttendees().size(),
-//                event.getStart().getDate().toString(), event.getEnd().getDate().toString(), userId,
-//                false, false);
-//
-//        return eventRepository.save(bookingEvent);
-//    }
 
     @PutMapping(value = "/event/{eventId}", consumes = {"application/json"})
     public BookingEvent updateBookingEvent(@PathVariable String eventId, @RequestBody BookingEventDTO newEvent) {
@@ -154,7 +139,6 @@ public class EventController {
                 });
     }
 
-    // TODO configure to not delete location as well (not sure if it does now)
     @DeleteMapping("/location/{locationId}/event/{eventId}")
     public ResponseEntity<?> deleteEvent(@PathVariable(value = "locationId") Long locationId,
                                          @PathVariable(value = "eventId") String eventId) {
